@@ -73,4 +73,4 @@ flutter run
 Feel free to fork this project and submit PRs. Let's make price tracking smarter!
 
 ---
-**Developed with ❤️ by Price Ninja Team**
+**Developed with ❤️ by [Raman Kumar](https://github.com/RamanKumar00)**
