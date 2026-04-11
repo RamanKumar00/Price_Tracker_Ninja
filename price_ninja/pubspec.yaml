@@ -1,0 +1,68 @@
+name: price_ninja
+description: "🛒 Price Ninja v4.0 - Advanced E-Commerce Price Tracker"
+publish_to: 'none'
+version: 4.0.0+1
+
+environment:
+  sdk: ^3.10.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  cupertino_icons: ^1.0.8
+
+  # State Management
+  flutter_riverpod: ^2.6.1
+
+  # Networking
+  dio: ^5.7.0
+  web_socket_channel: ^3.0.1
+
+  # Local Storage
+  hive: ^2.2.3
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.3.4
+
+  # Navigation
+  go_router: ^14.6.2
+
+  # Charts
+  fl_chart: ^0.70.2
+
+  # Animations
+  flutter_animate: ^4.5.2
+  confetti: ^0.7.0
+
+  # UI Components
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  google_fonts: ^6.2.1
+
+  # Utilities
+  intl: ^0.19.0
+  url_launcher: ^6.3.1
+  share_plus: ^10.1.4
+  flutter_secure_storage: ^9.2.3
+  connectivity_plus: ^6.1.1
+  uuid: ^4.5.1
+  firebase_core: ^4.6.0
+  firebase_auth: ^6.3.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^6.0.0
+  hive_generator: ^2.0.1
+  build_runner: any
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/logos/amazon.png
+    - assets/logos/flipkart.png
+    - assets/logos/myntra.png
+    - assets/logos/croma.png
+    - assets/logos/ajio.png
+    - assets/logos/nykaa.png

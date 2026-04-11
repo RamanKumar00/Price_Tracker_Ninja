@@ -1,0 +1,29 @@
+[
+  {
+    "id": "c96435fa-dbf7-4f0a-93ab-1287065ab035",
+    "product_id": "bf8be95b-7c7b-493d-b81f-67a55aa7fc99",
+    "price": 649.0,
+    "currency": "\u20b9",
+    "timestamp": "2026-04-11 14:00:00.964686",
+    "change_percent": null,
+    "status": "ok"
+  },
+  {
+    "id": "e497a6ed-d9aa-4c9b-8125-891d75ea9828",
+    "product_id": "51492cf0-b5f4-418a-b93e-538510a74b58",
+    "price": 649.0,
+    "currency": "\u20b9",
+    "timestamp": "2026-04-11 14:01:40.638255",
+    "change_percent": null,
+    "status": "ok"
+  },
+  {
+    "id": "56931189-b7c3-4caa-a4ae-ac4a8678877f",
+    "product_id": "509a6822-c377-4fd5-9db9-0bbe8f6d6841",
+    "price": 998.0,
+    "currency": "\u20b9",
+    "timestamp": "2026-04-11 14:27:01.230797",
+    "change_percent": null,
+    "status": "ok"
+  }
+]

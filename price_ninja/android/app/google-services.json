@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "804380081468",
+    "project_id": "price-ninja-raman-2026",
+    "storage_bucket": "price-ninja-raman-2026.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:804380081468:android:dc4426bb4af44d45333239",
+        "android_client_info": {
+          "package_name": "com.priceninja.price_ninja"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDnmLJmU5SPAqnQXcaco649TQQTkzZWDkg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
