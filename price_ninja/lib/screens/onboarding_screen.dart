@@ -43,7 +43,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
     if (_currentIndex < _pages.length - 1) {
       _pageController.nextPage(
         duration: const Duration(milliseconds: 600),
-        curve: Curves.tightForCurve,
+        curve: Curves.easeInOut,
       );
     } else {
       _finish();
@@ -108,7 +108,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                             ),
                           )
                               .animate(key: ValueKey(index))
-                              .scale(duration: 600.ms, curve: Curves.backOut)
+                              .scale(duration: 600.ms, curve: Curves.easeOutBack)
                               .shimmer(delay: 800.ms, duration: 1500.ms),
                           
                           const SizedBox(height: 60),

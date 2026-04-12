@@ -1,4 +1,4 @@
-\"\"\"Alert service for sending Email and WhatsApp notifications.\"\"\"
+"""Alert service for sending Email and WhatsApp notifications."""
 
 import smtplib
 from email.mime.text import MIMEText
@@ -16,8 +16,6 @@ logger = get_logger("alerts")
 
 
 class AlertService:
-    \"\"\"Sends price drop alerts via Email and WhatsApp.\"\"\"
-
     """Sends price drop alerts via Email and WhatsApp."""
 
     async def send_email_alert(

@@ -7,6 +7,8 @@ import '../providers/providers.dart';
 import '../services/search_history_service.dart';
 import '../widgets/glass_input.dart';
 import '../widgets/neon_button.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+
 
 /// Enhanced Add Product screen — dual mode (URL paste / platform browse),
 /// search history, platform context.

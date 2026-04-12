@@ -59,7 +59,7 @@ class _PatternBackgroundState extends State<PatternBackground>
           ),
         ),
         // Subtle grid
-        const Positioned.fill(
+        Positioned.fill(
           child: RepaintBoundary(
             child: CustomPaint(painter: _SubtleGridPainter()),
           ),

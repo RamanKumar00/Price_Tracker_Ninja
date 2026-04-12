@@ -113,7 +113,7 @@ class PredictionWidget extends ConsumerWidget {
               // New Stats section
               if ((product.startingPrice != null && product.currentPrice != null && product.startingPrice! > product.currentPrice!) ||
                   product.expiresAt != null) ...[
-                const Divider(height: 24, color: NinjaColors.border),
+                Divider(height: 24, color: NinjaColors.border),
                 
                 if (product.startingPrice != null && product.currentPrice != null && product.startingPrice! > product.currentPrice!)
                   _statRow(

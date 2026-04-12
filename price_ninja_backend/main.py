@@ -18,9 +18,91 @@ from contextlib import asynccontextmanager
 
 from app.routes import products, scrape, alerts, websocket, health
 from app.utils.logger import get_logger
+from app.services.storage_service import storage_service
+from app.services.scraper_service import scraper_service
+from app.services.data_service import data_service
+from app.services.alert_service import alert_service
+from app.models import PriceEntry
 from config import settings
+from apscheduler.schedulers.background import BackgroundScheduler
+import asyncio
 
 logger = get_logger("main")
+
+
+async def run_auto_scrape():
+    """Background task to update all tracked products."""
+    logger.info("⏰ Auto-scrape started...")
+    products = storage_service.get_all_products()
+    if not products:
+        logger.info("   No products to scrape.")
+        return
+
+    scraped_count = 0
+    alerts_count = 0
+
+    for product in products:
+        try:
+            # We run the sync scraper in a thread to not block the event loop
+            loop = asyncio.get_event_loop()
+            scraped = await loop.run_in_executor(None, scraper_service.scrape, product.url)
+            price = scraped["price"]
+
+            change = None
+            if product.current_price and product.current_price > 0:
+                change = round(((price - product.current_price) / product.current_price) * 100, 2)
+
+            # Record price
+            entry = PriceEntry(product_id=product.id, price=price, change_percent=change)
+            storage_service.add_price_entry(entry)
+
+            # Update metrics
+            data_service.update_product_metrics(product)
+            scraped_count += 1
+
+            # Check alerts
+            sent = await alert_service.check_and_alert(
+                product_id=product.id,
+                product_name=product.name,
+                current_price=price,
+                target_price=product.target_price,
+                url=product.url,
+                email=product.alert_config.email_address,
+                whatsapp=product.alert_config.whatsapp_number,
+                email_enabled=product.alert_config.email_enabled,
+                whatsapp_enabled=product.alert_config.whatsapp_enabled,
+                last_alert_price=product.last_alert_price,
+                starting_price=product.starting_price,
+                expires_at=product.expires_at,
+            )
+            alerts_count += sent
+            
+            if sent > 0:
+                product.last_alert_price = price
+                storage_service.update_product(product)
+
+            # Small delay to be polite to servers
+            await asyncio.sleep(2)
+
+        except Exception as e:
+            logger.error(f"   Auto-scrape failed for {product.name}: {e}")
+
+    logger.info(f"✅ Auto-scrape finished. Scraped: {scraped_count}, Alerts: {alerts_count}")
+
+
+def start_scheduler():
+    """Helper to start APScheduler and link it to the async task."""
+    scheduler = BackgroundScheduler()
+    # Scrape every 6 hours
+    scheduler.add_job(
+        lambda: asyncio.run(run_auto_scrape()), 
+        "interval", 
+        hours=6,
+        id="price_check_job",
+        replace_existing=True
+    )
+    scheduler.start()
+    return scheduler
 
 
 @asynccontextmanager
@@ -30,12 +112,13 @@ async def lifespan(app: FastAPI):
     logger.info(f"   Debug mode: {settings.DEBUG}")
     logger.info(f"   Data dir:   {settings.DATA_DIR}")
 
-    # Optional: start APScheduler for automatic scraping
-    # scheduler = BackgroundScheduler()
-    # scheduler.add_job(scrape_all, "interval", hours=6)
-    # scheduler.start()
+    # Start APScheduler for automatic scraping
+    scheduler = start_scheduler()
+    logger.info("📅 Background scheduler active (checking every 6h)")
 
     yield
+
+    scheduler.shutdown()
 
     logger.info("🛒 Price Ninja Backend shutting down...")
 

@@ -18,6 +18,10 @@ import '../widgets/neon_button.dart';
 import '../widgets/particle_background.dart';
 import '../widgets/platform_modal.dart';
 import '../widgets/premium_logo.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'auth_screen.dart';
+
 
 /// Premium Midnight home dashboard with interactive empty state.
 class HomeScreen extends ConsumerStatefulWidget {
