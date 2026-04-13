@@ -122,6 +122,8 @@ class _AmbientOrbsPainter extends CustomPainter {
 }
 
 class _SubtleGridPainter extends CustomPainter {
+  const _SubtleGridPainter();
+
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()

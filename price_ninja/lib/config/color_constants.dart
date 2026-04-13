@@ -30,9 +30,9 @@ class NinjaColors {
   static const Color textMuted = Color(0xFF6B7280);
 
   // ─── Border ───
-  static Color border = Colors.white.withValues(alpha: 0.08);
-  static Color borderHover = Colors.white.withValues(alpha: 0.15);
-  static Color borderAccent = violet.withValues(alpha: 0.4);
+  static const Color border = Color(0x14FFFFFF); // 0.08 alpha
+  static const Color borderHover = Color(0x26FFFFFF); // 0.15 alpha
+  static const Color borderAccent = Color(0x668B5CF6); // 0.4 opacity violet
 
   // ─── Status ───
   static const Color success = emerald;
@@ -41,8 +41,8 @@ class NinjaColors {
   static const Color info = blue;
 
   // ─── Glass ───
-  static Color glassBg = Colors.white.withValues(alpha: 0.04);
-  static Color glassBgHover = Colors.white.withValues(alpha: 0.07);
+  static const Color glassBg = Color(0x0AFFFFFF); // 0.04 alpha
+  static const Color glassBgHover = Color(0x12FFFFFF); // 0.07 alpha
 
   /// Accent color by index for cycling.
   static const List<Color> accents = [violet, blue, emerald, amber, rose];

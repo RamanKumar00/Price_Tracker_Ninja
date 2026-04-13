@@ -187,7 +187,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
           Switch.adaptive(
             value: isDark,
-            activeColor: NinjaColors.violet,
+            activeThumbColor: NinjaColors.violet,
             onChanged: (val) {
               ref.read(themeProvider.notifier).setThemeMode(val ? ThemeMode.dark : ThemeMode.light);
             },

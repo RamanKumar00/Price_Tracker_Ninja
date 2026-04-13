@@ -43,7 +43,6 @@ class _SplashScreenState extends State<SplashScreen>
         child: AnimatedBuilder(
           animation: Listenable.merge([_fadeController, _pulseController]),
           builder: (context, _) {
-            final glow = 0.2 + _pulseController.value * 0.3;
             return Opacity(
               opacity: _fadeController.value,
               child: Column(

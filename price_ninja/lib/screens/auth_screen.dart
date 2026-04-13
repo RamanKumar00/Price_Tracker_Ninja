@@ -95,6 +95,81 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
       body: SafeArea(
         child: Stack(
           children: [
+            SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const SizedBox(height: 40),
+                  const Center(child: PremiumLogo(size: 80)),
+                  const SizedBox(height: 24),
+                  const Text(
+                    'Price Ninja',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                      fontSize: 28,
+                      fontWeight: FontWeight.w700,
+                      color: NinjaColors.textPrimary,
+                      letterSpacing: -0.5,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    _isLogin ? 'Welcome back! Sign in to continue.' : 'Create an account to save tracks in cloud.',
+                    textAlign: TextAlign.center,
+                    style: TextStyle(fontSize: 14, color: NinjaColors.textSecondary),
+                  ),
+                  const SizedBox(height: 48),
+
+                  GlassInput(
+                    controller: _emailController,
+                    labelText: 'Email Address',
+                    hintText: 'you@example.com',
+                    prefixIcon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    colorIndex: 0,
+                  ),
+                  const SizedBox(height: 16),
+                  GlassInput(
+                    controller: _passwordController,
+                    labelText: 'Password',
+                    hintText: '••••••••',
+                    prefixIcon: Icons.lock_outline_rounded,
+                    obscureText: true,
+                    colorIndex: 1,
+                  ),
+                  const SizedBox(height: 32),
+
+                  NeonButton(
+                    text: _isLogin ? 'Sign In' : 'Sign Up',
+                    icon: _isLogin ? Icons.login_rounded : Icons.person_add_rounded,
+                    isLoading: _isLoading,
+                    onPressed: _submit,
+                  ),
+
+                  const SizedBox(height: 24),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _isLogin ? "Don't have an account? " : "Already have an account? ",
+                        style: TextStyle(color: NinjaColors.textSecondary),
+                      ),
+                      GestureDetector(
+                        onTap: () => setState(() => _isLogin = !_isLogin),
+                        child: Text(
+                          _isLogin ? 'Sign Up' : 'Sign In',
+                          style: const TextStyle(
+                            color: NinjaColors.violet,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
             if (Navigator.canPop(context))
               Positioned(
                 top: 0,
@@ -111,81 +186,6 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
                   ),
                 ),
               ),
-            SingleChildScrollView(
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 40),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-              const Center(child: PremiumLogo(size: 80)),
-              const SizedBox(height: 24),
-              const Text(
-                'Price Ninja',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w700,
-                  color: NinjaColors.textPrimary,
-                  letterSpacing: -0.5,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Text(
-                _isLogin ? 'Welcome back! Sign in to continue.' : 'Create an account to save tracks in cloud.',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 14, color: NinjaColors.textSecondary),
-              ),
-              const SizedBox(height: 48),
-
-              GlassInput(
-                controller: _emailController,
-                labelText: 'Email Address',
-                hintText: 'you@example.com',
-                prefixIcon: Icons.email_outlined,
-                keyboardType: TextInputType.emailAddress,
-                colorIndex: 0,
-              ),
-              const SizedBox(height: 16),
-              GlassInput(
-                controller: _passwordController,
-                labelText: 'Password',
-                hintText: '••••••••',
-                prefixIcon: Icons.lock_outline_rounded,
-                obscureText: true,
-                colorIndex: 1,
-              ),
-              const SizedBox(height: 32),
-
-              NeonButton(
-                text: _isLogin ? 'Sign In' : 'Sign Up',
-                icon: _isLogin ? Icons.login_rounded : Icons.person_add_rounded,
-                isLoading: _isLoading,
-                onPressed: _submit,
-              ),
-
-              const SizedBox(height: 24),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text(
-                    _isLogin ? "Don't have an account? " : "Already have an account? ",
-                    style: TextStyle(color: NinjaColors.textSecondary),
-                  ),
-                  GestureDetector(
-                    onTap: () => setState(() => _isLogin = !_isLogin),
-                    child: Text(
-                      _isLogin ? 'Sign Up' : 'Sign In',
-                      style: const TextStyle(
-                        color: NinjaColors.violet,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-        ),
           ],
         ),
       ),

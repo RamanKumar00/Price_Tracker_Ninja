@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'config/theme_config.dart';
-import 'config/color_constants.dart';
+
 import 'providers/providers.dart';
 import 'screens/splash_screen.dart';
 import 'screens/home_screen.dart';
@@ -10,7 +10,7 @@ import 'screens/alerts_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/settings_screen.dart';
-import 'screens/auth_screen.dart';
+
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
 import 'providers/onboarding_provider.dart';
