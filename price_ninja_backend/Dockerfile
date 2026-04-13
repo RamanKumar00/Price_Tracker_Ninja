@@ -74,5 +74,5 @@ RUN mkdir -p data
 # Expose port
 EXPOSE 8000
 
-# Start command (using string format for signal handling)
-CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Start command (using Shell form to allow environment variable expansion)
+CMD uvicorn main:app --host 0.0.0.0 --port $PORT
