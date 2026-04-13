@@ -26,7 +26,7 @@ class AlertService:
         target_price: float,
         url: str,
         product_id: str = "",
-        starting_price: float | None = None,
+        starting_price: Optional[float] = None,
     ) -> bool:
         """Send email alert via Gmail SMTP."""
         subject = f"🎯 Price Drop Alert - {product_name}"
@@ -104,7 +104,7 @@ Price Ninja v4.0
         target_price: float,
         url: str,
         product_id: str = "",
-        starting_price: float | None = None,
+        starting_price: Optional[float] = None,
     ) -> bool:
         """Send WhatsApp alert via Twilio."""
         drop_text = ""

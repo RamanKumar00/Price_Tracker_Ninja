@@ -1,7 +1,7 @@
 """Request/Response schemas for the API."""
 
 from pydantic import BaseModel, Field
-from typing import Optional, List
+from typing import Optional, List, Union
 from datetime import datetime
 
 
@@ -49,7 +49,7 @@ class AlertConfigUpdateRequest(BaseModel):
 class ApiResponse(BaseModel):
     success: bool = True
     message: str = ""
-    data: Optional[dict | list] = None
+    data: Optional[Union[dict, list]] = None
     timestamp: datetime = Field(default_factory=datetime.now)
 
 
