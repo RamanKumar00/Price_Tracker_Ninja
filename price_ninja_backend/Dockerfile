@@ -16,12 +16,12 @@ RUN apt-get update && apt-get install -y \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Copy requirements and install dependencies
-COPY requirements.txt .
+# Copy requirements from the backend folder into the container
+COPY price_ninja_backend/requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy application code
-COPY . .
+# Copy the rest of the backend code into the container
+COPY price_ninja_backend/ .
 
 # Create data directory for persistence
 RUN mkdir -p data
@@ -29,6 +29,5 @@ RUN mkdir -p data
 # Expose port
 EXPOSE 8000
 
-# Start command (using Shell form to allow environment variable expansion)
-# Note: In this image, Chrome is already at /usr/bin/google-chrome
+# Start command
 CMD uvicorn main:app --host 0.0.0.0 --port $PORT
