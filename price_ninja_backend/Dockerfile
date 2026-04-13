@@ -24,5 +24,7 @@ RUN mkdir -p data
 # Expose port
 EXPOSE 8000
 
-# Start command
-CMD uvicorn main:app --host 0.0.0.0 --port $PORT
+# Start command with explicit path and python path
+# Start command with dynamic port
+ENV PYTHONPATH=/app
+CMD python -m uvicorn main:app --host 0.0.0.0 --port $PORT
