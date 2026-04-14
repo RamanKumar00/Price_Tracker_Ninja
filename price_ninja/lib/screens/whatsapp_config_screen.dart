@@ -2,8 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../config/color_constants.dart';
 import '../providers/providers.dart';
-import '../widgets/glass_input.dart';
 import '../widgets/neon_button.dart';
+import 'package:intl_phone_field/intl_phone_field.dart';
+import 'package:intl_phone_field/country_picker_dialog.dart';
 
 class WhatsAppConfigScreen extends ConsumerStatefulWidget {
   const WhatsAppConfigScreen({super.key});
@@ -13,15 +14,14 @@ class WhatsAppConfigScreen extends ConsumerStatefulWidget {
 }
 
 class _WhatsAppConfigScreenState extends ConsumerState<WhatsAppConfigScreen> {
-  final _phoneController = TextEditingController();
+  String _completePhoneNumber = "";
   bool _isLoading = false;
 
   Future<void> _testAlert() async {
-    final phone = _phoneController.text.trim();
-    if (phone.isEmpty) {
+    if (_completePhoneNumber.isEmpty) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: const Text('Please enter a WhatsApp number'), backgroundColor: NinjaColors.rose),
+          SnackBar(content: const Text('Please enter a valid WhatsApp number'), backgroundColor: NinjaColors.rose),
         );
       }
       return;
@@ -32,13 +32,13 @@ class _WhatsAppConfigScreenState extends ConsumerState<WhatsAppConfigScreen> {
       final api = ref.read(apiServiceProvider);
       final success = await api.sendTestAlert(
         alertType: 'whatsapp',
-        whatsappNumber: phone,
+        whatsappNumber: _completePhoneNumber,
       );
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(success ? 'Test alert sent to $phone!' : 'Failed to send alert.'),
+            content: Text(success ? 'Test alert sent to $_completePhoneNumber!' : 'Failed to send alert.'),
             backgroundColor: success ? NinjaColors.emerald : NinjaColors.rose,
           ),
         );
@@ -57,18 +57,13 @@ class _WhatsAppConfigScreenState extends ConsumerState<WhatsAppConfigScreen> {
   }
 
   @override
-  void dispose() {
-    _phoneController.dispose();
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: NinjaColors.background,
       appBar: AppBar(
         title: const Text('WhatsApp Integration', style: TextStyle(color: NinjaColors.textPrimary)),
         backgroundColor: NinjaColors.surface,
+        elevation: 0,
         iconTheme: const IconThemeData(color: NinjaColors.textPrimary),
       ),
       body: SingleChildScrollView(
@@ -88,7 +83,7 @@ class _WhatsAppConfigScreenState extends ConsumerState<WhatsAppConfigScreen> {
                 children: [
                   Row(
                     children: [
-                      Icon(Icons.chat_bubble_outline_rounded, color: NinjaColors.emerald, size: 24),
+                      const Icon(Icons.chat_bubble_outline_rounded, color: NinjaColors.emerald, size: 24),
                       const SizedBox(width: 10),
                       const Text(
                         'Twilio WhatsApp Sandbox',
@@ -97,33 +92,57 @@ class _WhatsAppConfigScreenState extends ConsumerState<WhatsAppConfigScreen> {
                     ],
                   ),
                   const SizedBox(height: 16),
-                  Text(
-                    'To receive WhatsApp alerts, you must first join the Twilio sandbox from your WhatsApp account. Make sure your TWILIO_SID and TWILIO_AUTH_TOKEN are set in your backend .env file.',
+                  const Text(
+                    'To receive WhatsApp alerts, you must first join the Twilio sandbox by sending "join [your-keyword]" to your Twilio number. Your credentials must also be set in the Railway console.',
                     style: TextStyle(fontSize: 14, color: NinjaColors.textSecondary, height: 1.5),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: 32),
             const Text(
-              'Test Phone Number',
+              'Your WhatsApp Number',
               style: TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: NinjaColors.textPrimary),
             ),
-            const SizedBox(height: 8),
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              decoration: BoxDecoration(
-                color: NinjaColors.surface,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: NinjaColors.border),
-              ),
-              child: TextFormField(
-                controller: _phoneController,
-                decoration: const InputDecoration(
-                  hintText: '+1234567890',
-                  border: InputBorder.none,
+            const SizedBox(height: 12),
+            IntlPhoneField(
+              decoration: InputDecoration(
+                filled: true,
+                fillColor: NinjaColors.surface,
+                hintText: 'Phone Number',
+                hintStyle: const TextStyle(color: NinjaColors.textMuted),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: NinjaColors.border),
                 ),
-                style: const TextStyle(color: NinjaColors.textPrimary),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: NinjaColors.border),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: NinjaColors.emerald, width: 2),
+                ),
+                contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              ),
+              initialCountryCode: 'IN', // Default to India
+              dropdownTextStyle: const TextStyle(color: NinjaColors.textPrimary, fontSize: 16),
+              style: const TextStyle(color: NinjaColors.textPrimary, fontSize: 16),
+              onChanged: (phone) {
+                setState(() {
+                  _completePhoneNumber = phone.completeNumber;
+                });
+              },
+              cursorColor: NinjaColors.emerald,
+              pickerDialogStyle: PickerDialogStyle(
+                backgroundColor: NinjaColors.surface,
+                countryNameStyle: const TextStyle(color: NinjaColors.textPrimary),
+                countryCodeStyle: const TextStyle(color: NinjaColors.textPrimary),
+                searchFieldInputDecoration: InputDecoration(
+                  hintText: 'Search Country',
+                  hintStyle: const TextStyle(color: NinjaColors.textMuted),
+                  prefixIcon: const Icon(Icons.search, color: NinjaColors.textMuted),
+                ),
               ),
             ),
             const SizedBox(height: 24),
