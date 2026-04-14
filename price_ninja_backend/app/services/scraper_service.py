@@ -67,8 +67,13 @@ class ScraperService:
         options.add_experimental_option("useAutomationExtension", False)
 
         try:
+            # Explicitly set paths for the joyzoursky/python-chromedriver image
+            options.binary_location = "/usr/bin/google-chrome"
+            
             # Using the pre-installed ChromeDriver in the Docker image
-            driver = webdriver.Chrome(options=options)
+            chrome_service = Service(executable_path="/usr/bin/chromedriver")
+            
+            driver = webdriver.Chrome(service=chrome_service, options=options)
             driver.execute_cdp_cmd(
                 "Page.addScriptToEvaluateOnNewDocument",
                 {
