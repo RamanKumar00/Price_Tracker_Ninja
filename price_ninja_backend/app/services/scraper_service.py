@@ -62,13 +62,14 @@ class ScraperService:
         options.add_argument("--no-sandbox")
         options.add_argument("--disable-dev-shm-usage")
         options.add_argument("--disable-blink-features=AutomationControlled")
+        options.add_argument("--disable-software-rasterizer")
         options.add_argument(f"user-agent={random.choice(USER_AGENTS)}")
         options.add_experimental_option("excludeSwitches", ["enable-automation"])
         options.add_experimental_option("useAutomationExtension", False)
 
         try:
-            service = Service(ChromeDriverManager().install())
-            driver = webdriver.Chrome(service=service, options=options)
+            # Using the pre-installed ChromeDriver in the Docker image
+            driver = webdriver.Chrome(options=options)
             driver.execute_cdp_cmd(
                 "Page.addScriptToEvaluateOnNewDocument",
                 {

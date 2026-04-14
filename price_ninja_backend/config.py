@@ -26,7 +26,7 @@ class Settings(BaseSettings):
     USER_WHATSAPP_NUMBER: str = ""
 
     # Scraping
-    SCRAPE_TIMEOUT_SECONDS: int = 15
+    SCRAPE_TIMEOUT_SECONDS: int = 30
     SCRAPE_RATE_LIMIT_SECONDS: int = 2
 
     # JWT

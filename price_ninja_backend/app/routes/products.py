@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, HTTPException, Header
 from datetime import datetime
+import asyncio
 from typing import Optional, List
 
 from app.models import Product, Platform, AlertConfig
@@ -30,12 +31,13 @@ async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(
 
     platform = detect_platform(req.url)
 
-    # Try to scrape initial price
-    scraped = None
+    # Run sync scraper in a thread to avoid blocking the event loop
     try:
-        scraped = scraper_service.scrape(req.url)
+        loop = asyncio.get_event_loop()
+        scraped = await loop.run_in_executor(None, scraper_service.scrape, req.url)
     except ScraperException as e:
         logger.warning(f"Initial scrape failed for {req.url}: {e}")
+        scraped = None
 
     product = Product(
         user_id=x_user_id,
