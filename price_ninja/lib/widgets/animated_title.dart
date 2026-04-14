@@ -42,10 +42,6 @@ class _PremiumAnimatedTitleState extends State<PremiumAnimatedTitle>
       mainAxisSize: MainAxisSize.min,
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        // Flying Animated Logo
-        PremiumLogo(size: widget.fontSize * 1.5),
-        const SizedBox(width: 14),
-
         // Gradient Shimmer Text
         RepaintBoundary(
           child: AnimatedBuilder(

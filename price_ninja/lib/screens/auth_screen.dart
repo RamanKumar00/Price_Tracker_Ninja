@@ -100,11 +100,9 @@ class _AuthScreenState extends ConsumerState<AuthScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const SizedBox(height: 40),
-                  const Center(child: PremiumLogo(size: 80)),
-                  const SizedBox(height: 24),
-                  const Text(
-                    'Price Ninja',
+                  const SizedBox(height: 100), // More space since logo is removed
+                  Text(
+                    'Welcome Back, Ninja',
                     textAlign: TextAlign.center,
                     style: TextStyle(
                       fontSize: 28,

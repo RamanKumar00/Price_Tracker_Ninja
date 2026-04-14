@@ -48,7 +48,7 @@ class _SplashScreenState extends State<SplashScreen>
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const PremiumLogo(size: 84),
+                   PremiumLogo(size: 84, orbitRadius: 120),
                   const SizedBox(height: 24),
                   Text(
                     'Price Ninja',

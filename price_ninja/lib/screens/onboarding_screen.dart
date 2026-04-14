@@ -117,12 +117,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                     delay: 800.ms,
                                     duration: 1500.ms,
                                   ),
-                              
-                              // The Orbiting Ninja
-                              PremiumLogo(
-                                size: 50, 
-                                orbitRadius: 110,
-                              ).animate().fadeIn(delay: 600.ms),
                             ],
                           ),
                           
