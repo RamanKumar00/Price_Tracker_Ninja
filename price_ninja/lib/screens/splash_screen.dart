@@ -45,36 +45,33 @@ class _SplashScreenState extends State<SplashScreen>
           builder: (context, _) {
             return Opacity(
               opacity: _fadeController.value,
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
+              child: Stack(
+                alignment: Alignment.center,
                 children: [
-                   PremiumLogo(size: 84, orbitRadius: 120),
-                  const SizedBox(height: 24),
-                  Text(
-                    'Price Ninja',
-                    style: GoogleFonts.inter(
-                      fontSize: 28,
-                      fontWeight: FontWeight.w700,
-                      color: NinjaColors.textPrimary,
-                      letterSpacing: -0.5,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Smart price tracking',
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: NinjaColors.textMuted,
-                    ),
-                  ),
-                  const SizedBox(height: 32),
-                  SizedBox(
-                    width: 24,
-                    height: 24,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: NinjaColors.violet.withValues(alpha: 0.6),
-                    ),
+                  // The Ninja Orbiting specifically around the branding center
+                  const PremiumLogo(size: 72, orbitRadius: 220),
+
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Price Ninja',
+                        style: GoogleFonts.inter(
+                          fontSize: 32,
+                          fontWeight: FontWeight.w800,
+                          color: NinjaColors.textPrimary,
+                          letterSpacing: -1,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Smart price tracking',
+                        style: GoogleFonts.inter(
+                          fontSize: 16,
+                          color: NinjaColors.textMuted,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
