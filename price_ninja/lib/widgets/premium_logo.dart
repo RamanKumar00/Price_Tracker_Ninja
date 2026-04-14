@@ -76,95 +76,13 @@ class _PremiumLogoState extends State<PremiumLogo>
           ),
         ],
       ),
-      child: Stack(
-        clipBehavior: Clip.none,
-        alignment: Alignment.center,
-        children: [
-            // Center Cyan Tag
-          Positioned(
-            left: widget.size * 0.12,
-            top: widget.size * 0.15,
-            child: Transform.rotate(
-              angle: (-math.pi / 5) + swing,
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  // Outer neon glow behind the tag (using BackdropFilter or compositing instead of broken Web Icon shadow)
-                  Icon(
-                    Icons.local_offer_rounded,
-                    color: Colors.cyanAccent.withValues(alpha: 0.15),
-                    size: widget.size * 0.64,
-                  ),
-                  Icon(
-                    Icons.local_offer_rounded,
-                    color: Colors.cyanAccent.withValues(alpha: 0.25),
-                    size: widget.size * 0.60,
-                  ),
-                  // Inner metallic tag body
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.white, Colors.cyanAccent],
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                    ).createShader(bounds),
-                    child: Icon(
-                      Icons.local_offer_rounded,
-                      color: Colors.white,
-                      size: widget.size * 0.58,
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          
-          // Bottom Right Tracking Cutout
-          Positioned(
-            right: -widget.size * 0.08,
-            bottom: -widget.size * 0.08,
-            child: Container(
-              padding: EdgeInsets.all(widget.size * 0.08),
-              decoration: BoxDecoration(
-                color: const Color(0xFF0F172A), // Very dark
-                shape: BoxShape.circle,
-                // Outer dark silver ring simulating metallic casing
-                border: Border.all(
-                  color: Colors.grey.shade400,
-                  width: widget.size * 0.04,
-                ),
-                boxShadow: [
-                  // Drop shadow over the main body
-                  const BoxShadow(
-                    color: Colors.black87,
-                    blurRadius: 12,
-                    spreadRadius: 2,
-                    offset: Offset(-4, -4),
-                  ),
-                  // Green pulsing inner aura
-                  BoxShadow(
-                    color: Colors.greenAccent.withValues(alpha: 0.4 + swing.abs()),
-                    blurRadius: 20 + (swing.abs() * 20),
-                  ),
-                ],
-              ),
-              child: Stack(
-                alignment: Alignment.center,
-                children: [
-                  Icon(
-                    Icons.trending_down_rounded,
-                    color: Colors.greenAccent.withValues(alpha: 0.5),
-                    size: widget.size * 0.38,
-                  ),
-                  Icon(
-                    Icons.trending_down_rounded,
-                    color: Colors.greenAccent,
-                    size: widget.size * 0.35,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+      child: Center(
+        child: Image.asset(
+          'assets/images/app_logo.png',
+          width: widget.size * 0.85,
+          height: widget.size * 0.85,
+          fit: BoxFit.contain,
+        ),
       ),
     );
   }

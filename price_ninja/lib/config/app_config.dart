@@ -7,8 +7,8 @@ class AppConfig {
   static const String appTagline = 'Smart Price Tracking';
 
   // Backend
-  static const String apiBaseUrl = 'http://localhost:8000';
-  static const String wsBaseUrl = 'ws://localhost:8000';
+  static const String apiBaseUrl = 'https://pricetrackerninja-production.up.railway.app';
+  static const String wsBaseUrl = 'wss://pricetrackerninja-production.up.railway.app';
 
   // Timeouts
   static const Duration apiTimeout = Duration(seconds: 90);
