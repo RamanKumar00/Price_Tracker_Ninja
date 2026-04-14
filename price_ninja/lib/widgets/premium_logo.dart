@@ -24,9 +24,9 @@ class _PremiumLogoState extends State<PremiumLogo>
   void initState() {
     super.initState();
     _animController = AnimationController(
-        vsync: this, duration: const Duration(milliseconds: 2000));
+        vsync: this, duration: const Duration(milliseconds: 4000));
     if (widget.animate) {
-      _animController.repeat(reverse: true);
+      _animController.repeat();
     }
   }
 
@@ -38,14 +38,22 @@ class _PremiumLogoState extends State<PremiumLogo>
       animation: _animController,
       builder: (context, _) {
         final val = _animController.value;
-        // Float linearly up/down (sine wave limits)
-        final floatY = math.sin(val * math.pi) * (widget.size * -0.06);
-        // Swing slightly like a pendulum
-        final swing = math.cos(val * math.pi) * 0.08;
+        final angle = val * 2 * math.pi;
+        
+        // Circular Orbital Motion
+        final double radius = widget.size * 0.15;
+        final double orbitX = math.cos(angle) * radius;
+        final double orbitY = math.sin(angle) * radius;
+        
+        // Subtle tilt/swing based on rotation
+        final swing = math.cos(angle) * 0.1;
 
         return Transform.translate(
-          offset: Offset(0, floatY),
-          child: _buildLogo(floatY, swing),
+          offset: Offset(orbitX, orbitY),
+          child: Transform.rotate(
+            angle: swing,
+            child: _buildLogo(orbitY, swing),
+          ),
         );
       },
     );
