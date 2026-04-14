@@ -210,6 +210,15 @@ class _ProductCardState extends State<ProductCard>
                                 size: 22,
                               ),
                             ),
+                            const SizedBox(width: 14),
+                            GestureDetector(
+                              onTap: widget.onDelete,
+                              child: Icon(
+                                Icons.delete_outline_rounded,
+                                color: NinjaColors.rose.withValues(alpha: 0.7),
+                                size: 22,
+                              ),
+                            ),
                           ],
                         ),
                       ],

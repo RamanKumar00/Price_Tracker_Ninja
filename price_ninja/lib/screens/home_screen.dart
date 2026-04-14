@@ -163,8 +163,6 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     delegate: SliverChildListDelegate([
                       _buildMetrics(activeProduct),
                       if (products.length > 1) _buildProductPills(products),
-                      _buildChartSection(activeProduct),
-                      _buildPredictionSection(activeProduct),
                       _buildProductsHeader(products.length),
                       _buildSearchBar(ref),
                       const SizedBox(height: 12),
@@ -183,6 +181,10 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                               onDelete: () => _confirmDelete(ref, e.value),
                             ),
                           )),
+                      const SizedBox(height: 20),
+                      _buildChartSection(activeProduct),
+                      const SizedBox(height: 12),
+                      _buildPredictionSection(activeProduct),
                       const SizedBox(height: 100),
                     ]),
                   );
