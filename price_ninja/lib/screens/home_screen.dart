@@ -110,7 +110,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                 const SizedBox(width: 10),
                                 Text(
                                   'NINJA: ${displayName.toUpperCase()}',
-                                  style: GoogleFonts.jetbrainsMono(
+                                  style: GoogleFonts.jetBrainsMono(
                                     fontSize: 11,
                                     fontWeight: FontWeight.w700,
                                     color: NinjaColors.textSecondary,
