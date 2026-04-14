@@ -22,7 +22,7 @@ class Settings(BaseSettings):
     # WhatsApp (Twilio)
     TWILIO_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_NUMBER: str = "+14155238886"
+    TWILIO_WHATSAPP_NUMBER: str = "+17408472410"
     USER_WHATSAPP_NUMBER: str = ""
 
     # Scraping
