@@ -78,48 +78,48 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 20, 20, 4),
                   child: Column(
                     children: [
-                      const PremiumAnimatedTitle(text: 'Price Ninja'),
-                      const SizedBox(height: 4),
                       Consumer(
                         builder: (context, ref, _) {
-                          final user = ref.watch(authStateProvider).value;
+                          final userAsync = ref.watch(authStateProvider);
+                          final user = userAsync.value;
+                          
                           if (user == null) {
-                            return GestureDetector(
-                              onTap: () => Navigator.of(context).push(
-                                MaterialPageRoute(builder: (_) => const AuthScreen()),
-                              ),
-                              child: Container(
-                                margin: const EdgeInsets.only(top: 8),
-                                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: NinjaColors.violet.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.2)),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    const Icon(Icons.login_rounded, size: 14, color: NinjaColors.violet),
-                                    const SizedBox(width: 6),
-                                    Text(
-                                      'Sign in for alerts',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 12,
-                                        fontWeight: FontWeight.w600,
-                                        color: NinjaColors.violet,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.5);
+                            return const SizedBox.shrink();
                           }
-                          return Text(
-                            'Hello, ${user.email ?? 'Warrior'}',
-                            style: GoogleFonts.inter(fontSize: 13, color: NinjaColors.textMuted),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis,
-                          );
+                          
+                          final displayName = user.email?.split('@')[0] ?? 'Warrior';
+                          
+                          return Container(
+                            margin: const EdgeInsets.only(top: 12),
+                            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                            decoration: BoxDecoration(
+                              color: NinjaColors.glassBg,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: NinjaColors.border),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  width: 8, height: 8,
+                                  decoration: const BoxDecoration(
+                                    color: NinjaColors.emerald,
+                                    shape: BoxShape.circle,
+                                  ),
+                                ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 2.seconds),
+                                const SizedBox(width: 10),
+                                Text(
+                                  'NINJA: ${displayName.toUpperCase()}',
+                                  style: GoogleFonts.jetbrainsMono(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w700,
+                                    color: NinjaColors.textSecondary,
+                                    letterSpacing: 1.5,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2);
                         },
                       ),
                     ],
@@ -220,7 +220,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
           const SizedBox(height: 20),
 
-          // Quick actions
+          // Dashboard Header logic
           Row(
             children: [
               Container(
@@ -238,11 +238,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 ),
               ),
               const SizedBox(width: 10),
-              const Text('Quick Start',
+              const Text('System Status: Ready',
                   style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: NinjaColors.textPrimary)),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                      letterSpacing: 0.5,
+                      color: NinjaColors.textSecondary)),
             ],
           ),
           const SizedBox(height: 14),
@@ -772,7 +773,7 @@ class _WelcomeCardState extends State<_WelcomeCard>
           ),
           child: Column(
             children: [
-              // Animated icon
+              // Animated status icon instead of logo redudancy
               TweenAnimationBuilder<double>(
                 tween: Tween(begin: 0, end: 1),
                 duration: const Duration(milliseconds: 800),
@@ -780,13 +781,21 @@ class _WelcomeCardState extends State<_WelcomeCard>
                 builder: (context, value, child) {
                   return Transform.scale(
                     scale: value,
-                    child: const PremiumLogo(size: 68),
+                    child: Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: NinjaColors.violet.withValues(alpha: 0.1),
+                        shape: BoxShape.circle,
+                        border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.2)),
+                      ),
+                      child: const Icon(Icons.analytics_outlined, size: 36, color: NinjaColors.violet),
+                    ),
                   );
                 },
               ),
               const SizedBox(height: 20),
               const Text(
-                'Welcome to Price Ninja',
+                'Intelligence Overview',
                 style: TextStyle(
                   fontSize: 22,
                   fontWeight: FontWeight.w700,
