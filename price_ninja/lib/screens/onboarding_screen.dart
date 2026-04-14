@@ -90,26 +90,41 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          // Illustration/Icon Container
-                          Container(
-                            padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              color: data.color.withValues(alpha: 0.1),
-                              border: Border.all(
-                                color: data.color.withValues(alpha: 0.2),
-                                width: 2,
-                              ),
-                            ),
-                            child: Icon(
-                              data.icon,
-                              size: 80,
-                              color: data.color,
-                            ),
-                          )
-                              .animate(key: ValueKey(index))
-                              .scale(duration: 600.ms, curve: Curves.easeOutBack)
-                              .shimmer(delay: 800.ms, duration: 1500.ms),
+                          // Illustration/Icon Container with ORBITAL LOGO
+                          Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              // The Center Circle
+                              Container(
+                                padding: const EdgeInsets.all(32),
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: data.color.withValues(alpha: 0.1),
+                                  border: Border.all(
+                                    color: data.color.withValues(alpha: 0.2),
+                                    width: 2,
+                                  ),
+                                ),
+                                child: Icon(
+                                  data.icon,
+                                  size: 80,
+                                  color: data.color,
+                                ),
+                              ).animate(key: ValueKey('icon_$index')).scale(
+                                    duration: 600.ms,
+                                    curve: Curves.easeOutBack,
+                                  ).shimmer(
+                                    delay: 800.ms,
+                                    duration: 1500.ms,
+                                  ),
+                              
+                              // The Orbiting Ninja
+                              PremiumLogo(
+                                size: 50, 
+                                orbitRadius: 110,
+                              ).animate().fadeIn(delay: 600.ms),
+                            ],
+                          ),
                           
                           const SizedBox(height: 60),
                           
@@ -205,15 +220,6 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
             ],
           ),
           
-          // Small Logo to show branding
-          Positioned(
-            top: 60,
-            left: 0,
-            right: 0,
-            child: const Center(child: PremiumLogo(size: 40))
-                .animate()
-                .fadeIn(duration: 1000.ms),
-          ),
         ],
       ),
     );

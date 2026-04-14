@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 /// Animated Premium Logo matching Cyberpunk/Metallic Tracker aesthetic.
 class PremiumLogo extends StatefulWidget {
   final double size;
-  final bool animate;
+  final bool shouldAnimate;
+  final double? orbitRadius;
 
   const PremiumLogo({
     super.key,
     this.size = 64,
-    this.animate = true,
+    this.shouldAnimate = true,
+    this.orbitRadius,
   });
 
   @override
@@ -25,14 +27,14 @@ class _PremiumLogoState extends State<PremiumLogo>
     super.initState();
     _animController = AnimationController(
         vsync: this, duration: const Duration(milliseconds: 4000));
-    if (widget.animate) {
+    if (widget.shouldAnimate) {
       _animController.repeat();
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.animate) return _buildLogo(0, 0);
+    if (!widget.shouldAnimate) return _buildLogo(0, 0);
 
     return AnimatedBuilder(
       animation: _animController,
@@ -40,8 +42,8 @@ class _PremiumLogoState extends State<PremiumLogo>
         final val = _animController.value;
         final angle = val * 2 * math.pi;
         
-        // Circular Orbital Motion
-        final double radius = widget.size * 0.15;
+        // Circular Orbital Motion (Circumference)
+        final double radius = widget.orbitRadius ?? (widget.size * 1.5); // Default to a larger orbit
         final double orbitX = math.cos(angle) * radius;
         final double orbitY = math.sin(angle) * radius;
         
