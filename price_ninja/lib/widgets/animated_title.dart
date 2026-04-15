@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import '../config/color_constants.dart';
-import 'premium_logo.dart';
 
 /// Premium animated title — shimmer gradient text, flying logo mark.
 class PremiumAnimatedTitle extends StatefulWidget {
