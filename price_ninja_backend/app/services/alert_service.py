@@ -60,7 +60,7 @@ Price Ninja v4.0
         error_msg = None
 
         try:
-            if not settings.SMTP_USER or not settings.SMTP_PASSWORD:
+            if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_USER == "your_email@gmail.com":
                 raise AlertSendException("SMTP credentials not configured")
 
             msg = MIMEMultipart()
@@ -69,7 +69,7 @@ Price Ninja v4.0
             msg["Subject"] = subject
             msg.attach(MIMEText(body, "plain"))
 
-            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+            with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
                 server.starttls()
                 server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
                 server.send_message(msg)
@@ -130,7 +130,7 @@ _Price Ninja v4.0_""".strip()
         error_msg = None
 
         try:
-            if not settings.TWILIO_SID or not settings.TWILIO_AUTH_TOKEN:
+            if not settings.TWILIO_SID or not settings.TWILIO_AUTH_TOKEN or "xxxx" in settings.TWILIO_SID.lower() or settings.TWILIO_SID.startswith("AC" + "x" * 10):
                 raise AlertSendException("Twilio credentials not configured")
 
             from twilio.rest import Client
@@ -181,26 +181,49 @@ _Price Ninja v4.0_""".strip()
         return sent
 
     async def send_registration_confirmation(self, product_name, target_price, current_price, email="", whatsapp="", email_enabled=True, whatsapp_enabled=False, product_id="", expires_at=None):
+        """Send a registration confirmation. Non-blocking — skips if creds not configured."""
         sent = 0
         price_str = f"INR {current_price:,.0f}" if current_price else "Fetching..."
         expiry_str = f"\nTracking until: {expires_at.strftime('%d %b %Y')}" if expires_at else ""
+
+        # ─── Email confirmation ───
         if email_enabled and email:
-            subject = f"Tracking Started: {product_name}"
-            body = f"PRICE NINJA - Tracker Active\n\nHello!\n\nTracking started for {product_name}.\nTarget: INR {target_price:,.0f}\n{expiry_str}\n\nPrice Ninja v4.0"
-            try:
-                msg = MIMEMultipart(); msg["From"] = settings.SMTP_USER; msg["To"] = email; msg["Subject"] = subject; msg.attach(MIMEText(body, "plain"))
-                with smtplib.SMTP("smtp.gmail.com", 587) as server:
-                    server.starttls(); server.login(settings.SMTP_USER, settings.SMTP_PASSWORD); server.send_message(msg)
-                sent += 1
-            except Exception as e: logger.error(f"Email confirmation failed: {e}")
+            # Guard: skip if SMTP not configured
+            if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_USER == "your_email@gmail.com":
+                logger.info(f"Skipping email confirmation — SMTP not configured")
+            else:
+                try:
+                    subject = f"Tracking Started: {product_name}"
+                    body = f"PRICE NINJA - Tracker Active\n\nHello!\n\nTracking started for {product_name}.\nCurrent Price: {price_str}\nTarget: INR {target_price:,.0f}\n{expiry_str}\n\nPrice Ninja v4.0"
+                    msg = MIMEMultipart()
+                    msg["From"] = settings.SMTP_USER
+                    msg["To"] = email
+                    msg["Subject"] = subject
+                    msg.attach(MIMEText(body, "plain"))
+                    with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+                        server.starttls()
+                        server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                        server.send_message(msg)
+                    sent += 1
+                    logger.info(f"Email confirmation sent to {email}")
+                except Exception as e:
+                    logger.error(f"Email confirmation failed: {e}")
+
+        # ─── WhatsApp confirmation ───
         if whatsapp_enabled and whatsapp:
-            message_body = f"PRICE NINJA - Tracker Active\n\nTracking started for: *{product_name}*\nTarget: *INR {target_price:,.0f}*\n{expiry_str}\n\nPrice Ninja v4.0"
-            try:
-                from twilio.rest import Client
-                client = Client(settings.TWILIO_SID, settings.TWILIO_AUTH_TOKEN)
-                client.messages.create(body=message_body, from_=f"whatsapp:{settings.TWILIO_WHATSAPP_NUMBER}", to=f"whatsapp:{whatsapp}")
-                sent += 1
-            except Exception as e: logger.error(f"WhatsApp confirmation failed: {e}")
+            if not settings.TWILIO_SID or not settings.TWILIO_AUTH_TOKEN or "xxxx" in settings.TWILIO_SID.lower() or settings.TWILIO_SID.startswith("AC" + "x" * 10):
+                logger.info(f"Skipping WhatsApp confirmation — Twilio not configured")
+            else:
+                try:
+                    message_body = f"PRICE NINJA - Tracker Active\n\nTracking started for: *{product_name}*\nTarget: *INR {target_price:,.0f}*\n{expiry_str}\n\nPrice Ninja v4.0"
+                    from twilio.rest import Client
+                    client = Client(settings.TWILIO_SID, settings.TWILIO_AUTH_TOKEN)
+                    client.messages.create(body=message_body, from_=f"whatsapp:{settings.TWILIO_WHATSAPP_NUMBER}", to=f"whatsapp:{whatsapp}")
+                    sent += 1
+                    logger.info(f"WhatsApp confirmation sent to {whatsapp}")
+                except Exception as e:
+                    logger.error(f"WhatsApp confirmation failed: {e}")
+
         return sent
 
 alert_service = AlertService()

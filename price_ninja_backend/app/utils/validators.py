@@ -15,19 +15,46 @@ def detect_platform(url: str) -> Platform:
         return Platform.MYNTRA
     elif "ebay" in url_lower:
         return Platform.EBAY
+    elif "croma" in url_lower:
+        return Platform.UNKNOWN  # Will use generic scraper
+    elif "ajio" in url_lower:
+        return Platform.UNKNOWN
+    elif "nykaa" in url_lower:
+        return Platform.UNKNOWN
     return Platform.UNKNOWN
 
 
 def is_valid_product_url(url: str) -> bool:
-    """Check if the URL is a valid Amazon.in or Flipkart product URL."""
-    patterns = [
+    """Check if the URL is a valid e-commerce product URL.
+    
+    Supports Amazon, Flipkart, Myntra, eBay, Croma, Ajio, Nykaa,
+    and any other valid HTTP/HTTPS URL.
+    """
+    # Must be a valid HTTP/HTTPS URL
+    if not re.match(r"https?://", url):
+        return False
+    
+    # Known platforms — always valid
+    known_patterns = [
         r"https?://(www\.)?amazon\.(in|com)/.*",
         r"https?://(www\.)?flipkart\.com/.*",
         r"https?://dl\.flipkart\.com/.*",
         r"https?://(www\.)?myntra\.com/.*",
         r"https?://(www\.)?ebay\.(com|in|co\.uk)/.*",
+        r"https?://(www\.)?croma\.com/.*",
+        r"https?://(www\.)?ajio\.com/.*",
+        r"https?://(www\.)?nykaa\.com/.*",
+        r"https?://(www\.)?nykaafashion\.com/.*",
+        r"https?://(www\.)?jiomart\.com/.*",
+        r"https?://(www\.)?snapdeal\.com/.*",
+        r"https?://(www\.)?meesho\.com/.*",
+        r"https?://(www\.)?tatacliq\.com/.*",
     ]
-    return any(re.match(p, url) for p in patterns)
+    if any(re.match(p, url) for p in known_patterns):
+        return True
+    
+    # Accept any valid-looking domain URL
+    return bool(re.match(r"https?://[a-zA-Z0-9\-]+\.[a-zA-Z]{2,}", url))
 
 
 def format_price(price: float, currency: str = "₹") -> str:

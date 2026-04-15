@@ -27,7 +27,7 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(None)):
     """Add a new product to track."""
     if not is_valid_product_url(req.url):
-        raise HTTPException(400, "Invalid product URL. Only Amazon.in and Flipkart are supported.")
+        raise HTTPException(400, "Invalid product URL. Please provide a valid e-commerce product link (Amazon, Flipkart, Myntra, etc.).")
 
     platform = detect_platform(req.url)
 
