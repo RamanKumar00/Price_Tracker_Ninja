@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shimmer/shimmer.dart';
 import 'package:confetti/confetti.dart';
+import 'package:cached_network_image/cached_network_image.dart';
 import '../config/color_constants.dart';
 import '../models/product.dart';
 import '../models/platform_info.dart';
@@ -21,6 +22,7 @@ import '../widgets/premium_logo.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'auth_screen.dart';
+import 'product_detail_screen.dart';
 
 
 /// Premium Midnight home dashboard with interactive empty state.
@@ -173,8 +175,23 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                             child: ProductCard(
                               product: e.value,
                               index: e.key,
-                              onTap: () => setState(
-                                  () => _selectedProductId = e.value.id),
+                              onTap: () {
+                                setState(() => _selectedProductId = e.value.id);
+                                Navigator.push(
+                                  context,
+                                  PageRouteBuilder(
+                                    pageBuilder: (_, animation, __) =>
+                                        ProductDetailScreen(product: e.value),
+                                    transitionsBuilder: (_, animation, __, child) {
+                                      return FadeTransition(
+                                        opacity: animation,
+                                        child: child,
+                                      );
+                                    },
+                                    transitionDuration: const Duration(milliseconds: 300),
+                                  ),
+                                );
+                              },
                               onFavorite: () => ref
                                   .read(productsProvider.notifier)
                                   .toggleFavorite(
