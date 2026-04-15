@@ -57,9 +57,9 @@ class ScraperService:
     def _rate_limit(self):
         """Enforce minimum delay between scrape requests."""
         elapsed = time.time() - self._last_scrape_time
-        wait = settings.SCRAPE_RATE_LIMIT_SECONDS - elapsed
+        min_delay = 0.5  # Fast for initial add; scheduled scrapes can be slower
+        wait = min_delay - elapsed
         if wait > 0:
-            logger.info(f"Rate limiting: waiting {wait:.1f}s")
             time.sleep(wait)
         self._last_scrape_time = time.time()
 
@@ -67,7 +67,7 @@ class ScraperService:
         """Get request headers with a random User-Agent."""
         return {"User-Agent": random.choice(USER_AGENTS)}
 
-    def _fetch_page(self, url: str, timeout: int = 20) -> BeautifulSoup:
+    def _fetch_page(self, url: str, timeout: int = 10) -> BeautifulSoup:
         """Fetch a page using requests and return BeautifulSoup object."""
         headers = self._get_headers()
         try:
@@ -102,7 +102,7 @@ class ScraperService:
         else:
             raise ScraperException(f"Unsupported platform for URL: {url}")
 
-    def scrape_amazon(self, url: str, retries: int = 3) -> Dict:
+    def scrape_amazon(self, url: str, retries: int = 1) -> Dict:
         """Scrape Amazon.in product details with retry logic."""
         self._rate_limit()
 
@@ -184,7 +184,7 @@ class ScraperService:
                     raise ScraperException(f"Amazon scrape failed: {e}")
                 time.sleep(2 ** attempt)
 
-    def scrape_flipkart(self, url: str, retries: int = 3) -> Dict:
+    def scrape_flipkart(self, url: str, retries: int = 1) -> Dict:
         """Scrape Flipkart product details with retry logic."""
         self._rate_limit()
 
@@ -273,7 +273,7 @@ class ScraperService:
                     raise ScraperException(f"Flipkart scrape failed: {e}")
                 time.sleep(2 ** attempt)
 
-    def scrape_myntra(self, url: str, retries: int = 3) -> Dict:
+    def scrape_myntra(self, url: str, retries: int = 1) -> Dict:
         """Scrape Myntra product details."""
         self._rate_limit()
 
@@ -340,7 +340,7 @@ class ScraperService:
                     raise ScraperException(f"Myntra scrape failed: {e}")
                 time.sleep(2 ** attempt)
 
-    def scrape_ebay(self, url: str, retries: int = 3) -> Dict:
+    def scrape_ebay(self, url: str, retries: int = 1) -> Dict:
         """Scrape eBay product details."""
         self._rate_limit()
 

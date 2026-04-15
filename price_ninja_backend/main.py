@@ -15,6 +15,7 @@ Docs:
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
+from starlette.concurrency import run_in_threadpool
 
 from app.routes import products, scrape, alerts, websocket, health
 from app.utils.logger import get_logger
@@ -43,9 +44,8 @@ async def run_auto_scrape():
 
     for product in products:
         try:
-            # We run the sync scraper in a thread to not block the event loop
-            loop = asyncio.get_event_loop()
-            scraped = await loop.run_in_executor(None, scraper_service.scrape, product.url)
+            # Run sync scraper in a thread (non-blocking)
+            scraped = await run_in_threadpool(scraper_service.scrape, product.url)
             price = scraped["price"]
 
             change = None

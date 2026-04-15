@@ -6,13 +6,22 @@ class AppConfig {
   static const String appVersion = '4.0.0';
   static const String appTagline = 'Smart Price Tracking';
 
-  // Backend
-  static const String apiBaseUrl = 'https://pricetrackerninja-production.up.railway.app';
-  static const String wsBaseUrl = 'wss://pricetrackerninja-production.up.railway.app';
+  // Backend URL
+  // - Android Emulator: 10.0.2.2 (maps to host machine localhost)
+  // - Real device: use your machine's local IP (e.g., 192.168.x.x)
+  // - Override via: flutter run --dart-define=API_BASE_URL=http://192.168.1.x:8000
+  static const String apiBaseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8000',
+  );
+  static const String wsBaseUrl = String.fromEnvironment(
+    'WS_BASE_URL',
+    defaultValue: 'ws://10.0.2.2:8000',
+  );
 
   // Timeouts
-  static const Duration apiTimeout = Duration(seconds: 90);
-  static const Duration scrapeTimeout = Duration(seconds: 120);
+  static const Duration apiTimeout = Duration(seconds: 30);
+  static const Duration scrapeTimeout = Duration(seconds: 45);
 
   // Pagination
   static const int defaultPageSize = 15;

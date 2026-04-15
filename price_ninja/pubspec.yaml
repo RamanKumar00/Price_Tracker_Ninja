@@ -25,7 +25,7 @@ dependencies:
   shared_preferences: ^2.3.4
 
   # Navigation
-  go_router: ^14.6.2
+  # go_router removed — app uses Navigator.push directly
 
   # Charts
   fl_chart: ^0.70.2

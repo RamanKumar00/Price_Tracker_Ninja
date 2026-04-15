@@ -230,7 +230,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
         
         const SizedBox(height: 24),
-        _sectionHeader('Tracking Timeline', NinjaColors.blue),
+        _sectionHeader('Tracking Duration', NinjaColors.blue),
         const SizedBox(height: 12),
         SizedBox(
           height: 38,
@@ -266,7 +266,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           ),
         ),
           const SizedBox(height: 14),
-        _sectionHeader('Tracking Timeline', NinjaColors.violet),
+        _sectionHeader('Tracking Expiry', NinjaColors.violet),
         const SizedBox(height: 12),
         _expirySelection(),
 
@@ -331,7 +331,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             text: 'Add to Tracking',
             icon: Icons.rocket_launch_rounded,
             isLoading: _isLoading,
-            onPressed: _isValidUrl ? _addProduct : null,
+            onPressed: (_isValidUrl && !_isLoading) ? _addProduct : null,
           ),
         ),
 
@@ -858,6 +858,20 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         _selectedPlatform = null;
       });
       _loadHistory();
+
+      // Auto-refresh dashboard after 5s so background-scraped price appears
+      Future.delayed(const Duration(seconds: 5), () {
+        if (mounted) {
+          ref.read(productsProvider.notifier).loadProducts();
+        }
+      });
+      // Second refresh at 12s as fallback (slow networks)
+      Future.delayed(const Duration(seconds: 12), () {
+        if (mounted) {
+          ref.read(productsProvider.notifier).loadProducts();
+        }
+      });
+
     } catch (e) {
       setState(() => _errorMsg = 'Failed: $e');
     } finally {
@@ -898,7 +912,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             ),
             const SizedBox(height: 12),
             Text(
-              'Price Ninja is now monitoring "$productName". You\'ll get a notification the moment the price drops!',
+              'Price Ninja is tracking "$productName".\n\nPrice is being fetched in the background — it will appear on the dashboard in a few seconds! 🎯',
               textAlign: TextAlign.center,
               style: TextStyle(
                 fontSize: 14,

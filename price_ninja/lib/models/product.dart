@@ -96,11 +96,12 @@ class Product {
         'expires_at': expiresAt?.toIso8601String(),
       };
 
+  /// Price change % from when tracking started (negative = price dropped)
   double? get changePercent {
-    if (currentPrice == null || lowestPrice == null || lowestPrice == 0) {
+    if (currentPrice == null || startingPrice == null || startingPrice == 0) {
       return null;
     }
-    return ((currentPrice! - lowestPrice!) / lowestPrice!) * 100;
+    return ((currentPrice! - startingPrice!) / startingPrice!) * 100;
   }
 
   bool get isPriceBelowTarget =>

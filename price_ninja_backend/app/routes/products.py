@@ -4,8 +4,9 @@ from fastapi import APIRouter, HTTPException, Header
 from datetime import datetime
 import asyncio
 from typing import Optional, List
+from starlette.concurrency import run_in_threadpool
 
-from app.models import Product, Platform, AlertConfig
+from app.models import Product, Platform, AlertConfig, PriceEntry
 from app.schemas import (
     AddProductRequest,
     UpdateProductRequest,
@@ -23,66 +24,93 @@ logger = get_logger("routes.products")
 router = APIRouter(prefix="/api/products", tags=["Products"])
 
 
+async def _background_scrape_and_update(product_id: str, url: str, alert_config: AlertConfig, target_price: float):
+    """Run scrape in background after product is saved. Updates price, title, image."""
+    try:
+        logger.info(f"[BG] Starting background scrape for product {product_id}")
+        scraped = await run_in_threadpool(scraper_service.scrape, url)
+
+        product = storage_service.get_product(product_id)
+        if not product:
+            logger.warning(f"[BG] Product {product_id} not found after scrape")
+            return
+
+        # Update product with scraped data
+        if product.name in ("Fetching details...", "Unknown Product", ""):
+            product.name = scraped.get("title", product.name)
+        if not product.image_url:
+            product.image_url = scraped.get("image_url")
+
+        price = scraped["price"]
+        product.current_price = price
+        product.starting_price = price
+        storage_service.update_product(product)
+
+        # Save initial price entry
+        entry = PriceEntry(product_id=product_id, price=price)
+        storage_service.add_price_entry(entry)
+        data_service.update_product_metrics(product)
+
+        logger.info(f"[BG] Scrape done for {product.name}: ₹{price}")
+
+        # Send confirmation alert (also non-blocking)
+        await alert_service.send_registration_confirmation(
+            product_name=product.name,
+            target_price=target_price,
+            current_price=price,
+            email=alert_config.email_address,
+            whatsapp=alert_config.whatsapp_number,
+            email_enabled=alert_config.email_enabled,
+            whatsapp_enabled=alert_config.whatsapp_enabled,
+            product_id=product_id,
+        )
+
+    except ScraperException as e:
+        logger.warning(f"[BG] Scrape failed for {product_id}: {e}")
+    except Exception as e:
+        logger.error(f"[BG] Unexpected error for {product_id}: {e}")
+
+
 @router.post("/add", response_model=ApiResponse)
 async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(None)):
-    """Add a new product to track."""
+    """Add a new product to track. Saves instantly, scrapes price in background."""
     if not is_valid_product_url(req.url):
         raise HTTPException(400, "Invalid product URL. Please provide a valid e-commerce product link (Amazon, Flipkart, Myntra, etc.).")
 
     platform = detect_platform(req.url)
 
-    # Run sync scraper in a thread to avoid blocking the event loop
-    try:
-        loop = asyncio.get_event_loop()
-        scraped = await loop.run_in_executor(None, scraper_service.scrape, req.url)
-    except ScraperException as e:
-        logger.warning(f"Initial scrape failed for {req.url}: {e}")
-        scraped = None
+    alert_cfg = AlertConfig(
+        email_enabled=req.email_enabled,
+        whatsapp_enabled=req.whatsapp_enabled,
+        browser_enabled=req.browser_enabled,
+        email_address=req.email_address,
+        whatsapp_number=req.whatsapp_number,
+    )
 
+    # Save product IMMEDIATELY with placeholder — no scraping yet
     product = Product(
         user_id=x_user_id,
-        name=req.name or (scraped["title"] if scraped else "Unknown Product"),
+        name=req.name or "Fetching details...",
         url=req.url,
-        image_url=scraped["image_url"] if scraped else None,
         platform=platform,
-        current_price=scraped["price"] if scraped else None,
-        starting_price=scraped["price"] if scraped else None,
+        current_price=None,
+        starting_price=None,
         target_price=req.target_price,
         expires_at=req.expires_at,
-        alert_config=AlertConfig(
-            email_enabled=req.email_enabled,
-            whatsapp_enabled=req.whatsapp_enabled,
-            browser_enabled=req.browser_enabled,
-            email_address=req.email_address,
-            whatsapp_number=req.whatsapp_number,
-        ),
+        alert_config=alert_cfg,
     )
-
     saved = storage_service.add_product(product)
 
-    # Save initial price entry if scraped
-    if scraped:
-        from app.models import PriceEntry
-
-        entry = PriceEntry(product_id=saved.id, price=scraped["price"])
-        storage_service.add_price_entry(entry)
-        data_service.update_product_metrics(saved)
-        
-    # Send confirmation alert
-    await alert_service.send_registration_confirmation(
-        product_name=saved.name,
-        target_price=saved.target_price,
-        current_price=saved.current_price,
-        email=saved.alert_config.email_address,
-        whatsapp=saved.alert_config.whatsapp_number,
-        email_enabled=saved.alert_config.email_enabled,
-        whatsapp_enabled=saved.alert_config.whatsapp_enabled,
-        product_id=saved.id
+    # Kick off scraping in background — don't await it
+    asyncio.create_task(
+        _background_scrape_and_update(saved.id, req.url, alert_cfg, req.target_price)
     )
+
+    logger.info(f"Product saved instantly: {saved.id} | Background scrape started")
 
     return ApiResponse(
         success=True,
-        message=f"Product added: {saved.name}",
+        message=f"Product added! Price is being fetched in the background.",
         data=saved.model_dump(),
     )
 
