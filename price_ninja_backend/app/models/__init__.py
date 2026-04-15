@@ -46,6 +46,7 @@ class Product(BaseModel):
     name: str
     url: str
     image_url: Optional[str] = None
+    description: Optional[str] = None
     platform: Platform = Platform.UNKNOWN
     current_price: Optional[float] = None
     lowest_price: Optional[float] = None

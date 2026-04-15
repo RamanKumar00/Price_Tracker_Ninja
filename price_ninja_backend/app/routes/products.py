@@ -41,6 +41,8 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
             product.name = scraped.get("title", product.name)
         if not product.image_url:
             product.image_url = scraped.get("image_url")
+        if not product.description:
+            product.description = scraped.get("description", "No description available.")
 
         price = scraped["price"]
         product.current_price = price

@@ -162,10 +162,15 @@ class ScraperService:
                     if img_block:
                         image_url = img_block.get("src", "")
 
+                # ─── Extract description ───
+                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
+                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+
                 result = {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
+                    "description": description,
                     "currency": "₹",
                     "platform": Platform.AMAZON.value,
                     "timestamp": datetime.now().isoformat(),
@@ -251,10 +256,15 @@ class ScraperService:
                     if og:
                         image_url = og.get("content", "")
 
+                # ─── Extract description ───
+                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
+                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+
                 result = {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
+                    "description": description,
                     "currency": "₹",
                     "platform": Platform.FLIPKART.value,
                     "timestamp": datetime.now().isoformat(),
@@ -322,10 +332,15 @@ class ScraperService:
                 if og:
                     image_url = og.get("content", "")
 
+                # ─── Description ───
+                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
+                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+
                 return {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
+                    "description": description,
                     "currency": "₹",
                     "platform": Platform.MYNTRA.value,
                     "timestamp": datetime.now().isoformat(),
@@ -377,10 +392,15 @@ class ScraperService:
                 image_el = soup.select_one("img.ux-image-filmstrip-carousel-item.image") or soup.select_one(".ux-image-carousel img")
                 image_url = image_el.get("src", "") if image_el else ""
 
+                # ─── Description ───
+                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
+                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+
                 return {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
+                    "description": description,
                     "currency": "₹",
                     "platform": Platform.EBAY.value,
                     "timestamp": datetime.now().isoformat(),
@@ -479,10 +499,15 @@ class ScraperService:
                 domain = urlparse(url).netloc.replace("www.", "")
                 platform_name = domain.split(".")[0].capitalize()
 
+                # ─── Description ───
+                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
+                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+
                 result = {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
+                    "description": description,
                     "currency": "₹",
                     "platform": platform_name,
                     "timestamp": datetime.now().isoformat(),

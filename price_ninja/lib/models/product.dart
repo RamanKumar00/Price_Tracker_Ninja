@@ -4,6 +4,7 @@ class Product {
   String name;
   final String url;
   String? imageUrl;
+  String? description;
   final String platform;
   double? currentPrice;
   double? lowestPrice;
@@ -24,6 +25,7 @@ class Product {
     required this.name,
     required this.url,
     this.imageUrl,
+    this.description,
     this.platform = 'Unknown',
     this.currentPrice,
     this.lowestPrice,
@@ -48,6 +50,7 @@ class Product {
       name: json['name'] ?? 'Unknown',
       url: json['url'] ?? '',
       imageUrl: json['image_url'],
+      description: json['description'],
       platform: json['platform'] ?? 'Unknown',
       currentPrice: (json['current_price'] as num?)?.toDouble(),
       lowestPrice: (json['lowest_price'] as num?)?.toDouble(),
@@ -80,6 +83,7 @@ class Product {
         'name': name,
         'url': url,
         'image_url': imageUrl,
+        'description': description,
         'platform': platform,
         'current_price': currentPrice,
         'lowest_price': lowestPrice,

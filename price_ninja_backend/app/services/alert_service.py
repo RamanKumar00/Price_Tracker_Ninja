@@ -56,18 +56,61 @@ class AlertService:
 Price Ninja v4.0
         """.strip()
 
-        success = False
-        error_msg = None
+        msg = MIMEMultipart("alternative")
+        msg["From"] = settings.SMTP_USER
+        msg["To"] = email
+        msg["Subject"] = subject
+
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #0f172a; margin: 0; padding: 20px; }}
+                .container {{ max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); }}
+                .header {{ background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); padding: 30px; text-align: center; }}
+                .header h1 {{ margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px; }}
+                .content {{ padding: 40px 30px; color: #f8fafc; line-height: 1.6; font-size: 16px; }}
+                .price-box {{ background: rgba(16, 185, 129, 0.1); border-left: 4px solid #10b981; padding: 20px; margin: 25px 0; border-radius: 8px; }}
+                .price-text {{ font-size: 20px; font-weight: 700; color: #10b981; margin: 8px 0; }}
+                .target-text {{ font-size: 18px; font-weight: 600; color: #94a3b8; margin: 8px 0; }}
+                .info-text {{ font-size: 16px; font-weight: 500; color: #f8fafc; margin: 8px 0; }}
+                .btn {{ display: inline-block; padding: 14px 28px; background: linear-gradient(135deg, #10b981 0%, #3b82f6 100%); color: white; text-decoration: none; border-radius: 8px; font-weight: 700; font-size: 16px; margin-top: 25px; text-align: center; width: 100%; box-sizing: border-box; }}
+                .footer {{ text-align: center; padding: 20px; color: #64748b; font-size: 13px; background: #0f172a; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>🥷 PRICE NINJA</h1>
+                </div>
+                <div class="content">
+                    <h2 style="margin-top: 0; color: #f8fafc; font-size: 24px;">Drop Detected! 📉</h2>
+                    {f'<p style="color: #38bdf8; font-weight: bold;">{savings_starting.strip()}</p>' if savings_starting else ''}
+                    <p style="color: #cbd5e1;">Great news! The price for <strong>{product_name}</strong> just dropped below your target.</p>
+                    
+                    <div class="price-box">
+                        <p class="price-text">Current Price: ₹{current_price:,.0f}</p>
+                        <p class="target-text">Target Price: ₹{target_price:,.0f}</p>
+                        <p class="info-text">Total Savings: ₹{(target_price - current_price):,.0f}</p>
+                    </div>
+                    
+                    <a href="{url}" class="btn">View & Buy Now</a>
+                </div>
+                <div class="footer">
+                    Price Ninja v4.0 • Premium Price Tracking<br>
+                    <span style="font-size: 11px;">You are receiving this because you set a price alert.</span>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        msg.attach(MIMEText(body, "plain"))
+        msg.attach(MIMEText(html_body, "html"))
 
         try:
             if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_USER == "your_email@gmail.com":
                 raise AlertSendException("SMTP credentials not configured")
-
-            msg = MIMEMultipart()
-            msg["From"] = settings.SMTP_USER
-            msg["To"] = email
-            msg["Subject"] = subject
-            msg.attach(MIMEText(body, "plain"))
 
             with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
                 server.starttls()
@@ -193,13 +236,61 @@ _Price Ninja v4.0_""".strip()
                 logger.info(f"Skipping email confirmation — SMTP not configured")
             else:
                 try:
-                    subject = f"Tracking Started: {product_name}"
-                    body = f"PRICE NINJA - Tracker Active\n\nHello!\n\nTracking started for {product_name}.\nCurrent Price: {price_str}\nTarget: INR {target_price:,.0f}\n{expiry_str}\n\nPrice Ninja v4.0"
-                    msg = MIMEMultipart()
+                    subject = f"Tracker Active: {product_name[:30]}..."
+                    body_plain = f"PRICE NINJA - Tracker Active\n\nTracking started for {product_name}.\nCurrent Price: {price_str}\nTarget: INR {target_price:,.0f}\n{expiry_str}\n\nPrice Ninja v4.0"
+                    
+                    html_body = f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head>
+                        <style>
+                            body {{ font-family: 'Inter', Helvetica, Arial, sans-serif; background-color: #0f172a; margin: 0; padding: 20px; }}
+                            .container {{ max-width: 600px; margin: 0 auto; background: #1e293b; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 25px rgba(0,0,0,0.5); border: 1px solid #334155; }}
+                            .header {{ background: linear-gradient(135deg, #8b5cf6 0%, #3b82f6 100%); padding: 30px; text-align: center; }}
+                            .header h1 {{ margin: 0; color: #ffffff; font-size: 28px; font-weight: 800; letter-spacing: 1px; }}
+                            .content {{ padding: 35px 30px; color: #f8fafc; line-height: 1.6; font-size: 16px; }}
+                            .product-title {{ color: #ffffff; font-size: 18px; font-weight: 600; margin-bottom: 20px; }}
+                            .price-box {{ background: rgba(139, 92, 246, 0.1); border-left: 4px solid #8b5cf6; padding: 20px; margin: 20px 0; border-radius: 8px; }}
+                            .price-text {{ font-size: 18px; font-weight: 500; color: #cbd5e1; margin: 6px 0; }}
+                            .price-val {{ font-size: 20px; font-weight: 700; color: #ffffff; }}
+                            .target-val {{ font-weight: 700; color: #8b5cf6; }}
+                            .footer {{ text-align: center; padding: 20px; color: #64748b; font-size: 13px; background: #0f172a; border-top: 1px solid #1e293b; }}
+                        </style>
+                    </head>
+                    <body>
+                        <div class="container">
+                            <div class="header">
+                                <h1>🥷 PRICE NINJA</h1>
+                            </div>
+                            <div class="content">
+                                <h2 style="margin-top: 0; color: #f8fafc; font-size: 24px;">Tracking Started! 🎯</h2>
+                                <p style="color: #cbd5e1;">Your ninja is now watching the prices for:</p>
+                                <div class="product-title">{product_name}</div>
+                                
+                                <div class="price-box">
+                                    <p class="price-text">Current Price: <span class="price-val">{price_str}</span></p>
+                                    <p class="price-text">Target Price: <span class="price-val target-val">INR {target_price:,.0f}</span></p>
+                                </div>
+                                
+                                <p style="color: #94a3b8; font-size: 15px;">We'll secretly monitor this and immediately alert you via Email & WhatsApp the moment it drops below your target.</p>
+                                {f'<p style="color: #8b5cf6; font-size: 14px; font-weight: 600;">Tracking valid until: {expires_at.strftime("%d %b %Y")}</p>' if expires_at else ''}
+                            </div>
+                            <div class="footer">
+                                Price Ninja v4.0 • We track, you save.<br>
+                                <span style="font-size: 11px;">You are receiving this because you added a product on Price Ninja.</span>
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+
+                    msg = MIMEMultipart("alternative")
                     msg["From"] = settings.SMTP_USER
                     msg["To"] = email
                     msg["Subject"] = subject
-                    msg.attach(MIMEText(body, "plain"))
+                    msg.attach(MIMEText(body_plain, "plain"))
+                    msg.attach(MIMEText(html_body, "html"))
+                    
                     with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
                         server.starttls()
                         server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)

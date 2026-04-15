@@ -78,6 +78,32 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     _buildPricingMatrix(p),
                     const SizedBox(height: 24),
 
+                    // ─── Description ───
+                    if (p.description != null && p.description!.isNotEmpty) ...[
+                      _buildSectionHeader('Description', Icons.notes_rounded, NinjaColors.emerald),
+                      const SizedBox(height: 12),
+                      Container(
+                        padding: const EdgeInsets.all(20),
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).colorScheme.surface,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                            color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+                          ),
+                        ),
+                        child: Text(
+                          p.description!,
+                          style: GoogleFonts.inter(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            color: NinjaColors.textSecondary,
+                            height: 1.6,
+                          ),
+                        ),
+                      ).animate().fadeIn(delay: 450.ms).slideY(begin: 0.05),
+                      const SizedBox(height: 24),
+                    ],
+
                     // ─── Quick Actions ───
                     _buildQuickActions(p),
                     const SizedBox(height: 28),
