@@ -1,5 +1,6 @@
 /// API service for communicating with the Price Ninja backend.
 import 'package:dio/dio.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import '../config/app_config.dart';
 import '../models/product.dart';
 
@@ -25,12 +26,25 @@ class ApiService {
     ));
   }
 
-  void setUserId(String? userId) {
-    if (userId != null) {
-      _dio.options.headers['X-User-Id'] = userId;
-    } else {
-      _dio.options.headers.remove('X-User-Id');
-    }
+    // Auth token interceptor
+    _dio.interceptors.add(InterceptorsWrapper(
+      onRequest: (options, handler) async {
+        try {
+          final user = FirebaseAuth.instance.currentUser;
+          if (user != null) {
+            final token = await user.getIdToken();
+            if (token != null) {
+              options.headers['Authorization'] = 'Bearer $token';
+              // Keep X-User-Id for backwards compatibility on backend temporarily
+              options.headers['X-User-Id'] = user.uid;
+            }
+          }
+        } catch (e) {
+          print('[AuthInterceptor] Error fetching token: $e');
+        }
+        return handler.next(options);
+      },
+    ));
   }
 
   // ─────────── Products ───────────

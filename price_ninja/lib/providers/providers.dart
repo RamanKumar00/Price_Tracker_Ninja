@@ -6,12 +6,7 @@ import 'auth_provider.dart';
 
 // ─────────── API Service Provider ───────────
 final apiServiceProvider = Provider<ApiService>((ref) {
-  final api = ApiService();
-  // Sync UID from AuthProvider
-  ref.listen(authStateProvider, (previous, next) {
-    next.whenData((user) => api.setUserId(user?.uid));
-  }, fireImmediately: true);
-  return api;
+  return ApiService();
 });
 
 // ─────────── Products State ───────────

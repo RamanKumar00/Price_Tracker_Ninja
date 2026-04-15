@@ -1,6 +1,7 @@
 """Product management API routes."""
 
-from fastapi import APIRouter, HTTPException, Header
+from fastapi import APIRouter, HTTPException, Header, Depends
+from app.utils.auth import get_current_user_id
 from datetime import datetime
 import asyncio
 from typing import Optional, List
@@ -72,7 +73,7 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
 
 
 @router.post("/add", response_model=ApiResponse)
-async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(None)):
+async def add_product(req: AddProductRequest, user_id: Optional[str] = Depends(get_current_user_id)):
     """Add a new product to track. Saves instantly, scrapes price in background."""
     if not is_valid_product_url(req.url):
         raise HTTPException(400, "Invalid product URL. Please provide a valid e-commerce product link (Amazon, Flipkart, Myntra, etc.).")
@@ -89,7 +90,7 @@ async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(
 
     # Save product IMMEDIATELY with placeholder — no scraping yet
     product = Product(
-        user_id=x_user_id,
+        user_id=user_id,
         name=req.name or "Fetching details...",
         url=req.url,
         platform=platform,
@@ -116,9 +117,9 @@ async def add_product(req: AddProductRequest, x_user_id: Optional[str] = Header(
 
 
 @router.get("", response_model=ApiResponse)
-async def list_products(x_user_id: Optional[str] = Header(None)):
+async def list_products(user_id: Optional[str] = Depends(get_current_user_id)):
     """Get all tracked products."""
-    products = storage_service.get_all_products(user_id=x_user_id)
+    products = storage_service.get_all_products(user_id=user_id)
     return ApiResponse(
         success=True,
         message=f"{len(products)} products found",
@@ -127,19 +128,19 @@ async def list_products(x_user_id: Optional[str] = Header(None)):
 
 
 @router.get("/{product_id}", response_model=ApiResponse)
-async def get_product(product_id: str, x_user_id: Optional[str] = Header(None)):
+async def get_product(product_id: str, user_id: Optional[str] = Depends(get_current_user_id)):
     """Get a specific product by ID."""
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
     return ApiResponse(success=True, data=product.model_dump())
 
 
 @router.put("/{product_id}", response_model=ApiResponse)
-async def update_product(product_id: str, req: UpdateProductRequest, x_user_id: Optional[str] = Header(None)):
+async def update_product(product_id: str, req: UpdateProductRequest, user_id: Optional[str] = Depends(get_current_user_id)):
     """Update a product's settings."""
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
 
     if req.name is not None:
@@ -166,10 +167,10 @@ async def update_product(product_id: str, req: UpdateProductRequest, x_user_id: 
 
 
 @router.delete("/{product_id}", response_model=ApiResponse)
-async def delete_product(product_id: str, x_user_id: Optional[str] = Header(None)):
+async def delete_product(product_id: str, user_id: Optional[str] = Depends(get_current_user_id)):
     """Delete a product and its history."""
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
     
     deleted = storage_service.delete_product(product_id)
@@ -179,10 +180,10 @@ async def delete_product(product_id: str, x_user_id: Optional[str] = Header(None
 
 
 @router.get("/{product_id}/history", response_model=ApiResponse)
-async def get_price_history(product_id: str, limit: int = 100, offset: int = 0, x_user_id: Optional[str] = Header(None)):
+async def get_price_history(product_id: str, limit: int = 100, offset: int = 0, user_id: Optional[str] = Depends(get_current_user_id)):
     """Get price history for a product."""
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
 
     history = storage_service.get_price_history(product_id, limit=limit, offset=offset)
@@ -202,10 +203,10 @@ async def get_price_history(product_id: str, limit: int = 100, offset: int = 0, 
 
 
 @router.get("/{product_id}/trend")
-async def get_price_trend(product_id: str, limit: int = 30, x_user_id: Optional[str] = Header(None)):
+async def get_price_trend(product_id: str, limit: int = 30, user_id: Optional[str] = Depends(get_current_user_id)):
     """Get price trend data for charts."""
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
 
     trend = data_service.get_price_trend(product_id, limit=limit)
@@ -213,12 +214,12 @@ async def get_price_trend(product_id: str, limit: int = 30, x_user_id: Optional[
 
 
 @router.get("/{product_id}/export")
-async def export_csv(product_id: str, x_user_id: Optional[str] = Header(None)):
+async def export_csv(product_id: str, user_id: Optional[str] = Depends(get_current_user_id)):
     """Export price history as CSV."""
     from fastapi.responses import PlainTextResponse
 
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
 
     csv_data = data_service.export_csv(product_id)
@@ -229,11 +230,11 @@ async def export_csv(product_id: str, x_user_id: Optional[str] = Header(None)):
     )
 
 @router.get("/{product_id}/prediction")
-async def get_price_prediction(product_id: str, days: int = 7, x_user_id: Optional[str] = Header(None)):
+async def get_price_prediction(product_id: str, days: int = 7, user_id: Optional[str] = Depends(get_current_user_id)):
     """Predict price based on history."""
     from app.services.prediction_service import prediction_service
     product = storage_service.get_product(product_id)
-    if not product or (product.user_id and product.user_id != x_user_id):
+    if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
 
     pred = prediction_service.predict_price(product_id, days_ahead=days)
