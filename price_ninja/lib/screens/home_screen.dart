@@ -161,7 +161,8 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
 
                   return SliverList(
                     delegate: SliverChildListDelegate([
-                      _buildMetrics(activeProduct),
+                      _buildFocusHeader(activeProduct),
+                      const SizedBox(height: 12),
                       if (products.length > 1) _buildProductPills(products),
                       _buildProductsHeader(products.length),
                       _buildSearchBar(ref),
@@ -185,6 +186,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       _buildChartSection(activeProduct),
                       const SizedBox(height: 12),
                       _buildPredictionSection(activeProduct),
+                      _buildMetrics(activeProduct),
                       const SizedBox(height: 100),
                     ]),
                   );
@@ -385,6 +387,127 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ),
         ],
       ),
+    );
+  }
+
+  // ─────────── Focus Header (Master Detail) ───────────
+  Widget _buildFocusHeader(Product p) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: NinjaColors.glassBg,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: NinjaColors.border),
+        boxShadow: [
+          BoxShadow(
+            color: NinjaColors.violet.withValues(alpha: 0.1),
+            blurRadius: 30,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Product Image Display
+              Container(
+                width: 100,
+                height: 100,
+                decoration: BoxDecoration(
+                  color: NinjaColors.surface,
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: NinjaColors.border),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: p.imageUrl != null && p.imageUrl!.isNotEmpty
+                    ? CachedNetworkImage(
+                        imageUrl: p.imageUrl!,
+                        fit: BoxFit.cover,
+                        errorWidget: (_, __, ___) => const Icon(Icons.shopping_bag, color: NinjaColors.textMuted),
+                      )
+                    : const Icon(Icons.shopping_bag, color: NinjaColors.textMuted),
+              ).animate().scale(delay: 200.ms),
+              const SizedBox(width: 16),
+              // Name and Platform
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: NinjaColors.violet.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        p.platform.toUpperCase(),
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          color: NinjaColors.violet,
+                          letterSpacing: 1.2,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      p.name,
+                      style: GoogleFonts.inter(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: NinjaColors.textPrimary,
+                        height: 1.3,
+                      ),
+                      maxLines: 3,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 24),
+          // Tactical Pricing Matrix
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildPriceStat('ACTUAL', p.currentPrice, NinjaColors.textPrimary),
+              _buildPriceStat('AVERAGE', p.averagePrice, NinjaColors.blue),
+              _buildPriceStat('TARGET', p.targetPrice, NinjaColors.emerald),
+            ],
+          ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPriceStat(String label, double? value, Color color) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.center,
+      children: [
+        Text(
+          label,
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 10,
+            fontWeight: FontWeight.w700,
+            color: NinjaColors.textMuted,
+            letterSpacing: 1.0,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Text(
+          value != null ? '₹${value.toStringAsFixed(0)}' : '---',
+          style: GoogleFonts.inter(
+            fontSize: 18,
+            fontWeight: FontWeight.w800,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 
