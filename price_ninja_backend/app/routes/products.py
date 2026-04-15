@@ -1,6 +1,6 @@
 """Product management API routes."""
 
-from fastapi import APIRouter, HTTPException, Header, Depends
+from fastapi import APIRouter, HTTPException, Header, Depends, BackgroundTasks
 from app.utils.auth import get_current_user_id
 from datetime import datetime
 import asyncio
@@ -73,7 +73,11 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
 
 
 @router.post("/add", response_model=ApiResponse)
-async def add_product(req: AddProductRequest, user_id: Optional[str] = Depends(get_current_user_id)):
+async def add_product(
+    req: AddProductRequest,
+    background_tasks: BackgroundTasks,
+    user_id: Optional[str] = Depends(get_current_user_id)
+):
     """Add a new product to track. Saves instantly, scrapes price in background."""
     if not is_valid_product_url(req.url):
         raise HTTPException(400, "Invalid product URL. Please provide a valid e-commerce product link (Amazon, Flipkart, Myntra, etc.).")
@@ -102,9 +106,9 @@ async def add_product(req: AddProductRequest, user_id: Optional[str] = Depends(g
     )
     saved = storage_service.add_product(product)
 
-    # Kick off scraping in background — don't await it
-    asyncio.create_task(
-        _background_scrape_and_update(saved.id, req.url, alert_cfg, req.target_price)
+    # Kick off scraping in background via FastAPI BackgroundTasks (guaranteed to run after response)
+    background_tasks.add_task(
+        _background_scrape_and_update, saved.id, req.url, alert_cfg, req.target_price
     )
 
     logger.info(f"Product saved instantly: {saved.id} | Background scrape started")
