@@ -224,80 +224,80 @@ class ScraperService:
         """Scrape Flipkart product details with retry logic."""
         self._rate_limit()
 
+        # Flipkart often blocks desktop scrapers but allows mobile ones more easily
+        mobile_headers = {
+            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1",
+            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+            "Accept-Language": "en-IN,en;q=0.9",
+        }
+
         for attempt in range(1, retries + 1):
             try:
                 logger.info(f"Scraping Flipkart (attempt {attempt}): {url[:80]}...")
-                soup = self._fetch_page(url)
+                
+                # Try with mobile headers first
+                response = self._session.get(url, headers=mobile_headers, timeout=10)
+                soup = BeautifulSoup(response.text, "lxml")
 
                 # ─── Extract price ───
                 price = None
 
-                # Method 1: _30jeq3 class (classic)
-                price_el = soup.find("div", class_="_30jeq3")
-                if price_el:
-                    price = extract_price_from_text(price_el.get_text())
+                # Method 1: meta tags (Reliable on mobile/desktop both)
+                meta_price = (soup.find("meta", {"property": "product:price:amount"}) or 
+                              soup.find("meta", {"name": "twitter:data1"})) # twitter:data1 is often price on FK
+                if meta_price:
+                    try:
+                        content = meta_price.get("content", "") or meta_price.get("value", "")
+                        price = extract_price_from_text(content)
+                    except: pass
 
-                # Method 2: Cfs16oy class (new layout)
+                # Method 2: div with specifically named classes (Nx9bqj is current)
                 if price is None:
-                    price_el = soup.find("div", class_="Nx9bqj CxhGGd")
+                    price_el = soup.find("div", class_="Nx9bqj") or soup.find("div", class_="_30jeq3")
                     if price_el:
                         price = extract_price_from_text(price_el.get_text())
 
-                # Method 3: Any div with ₹ in specific selectors
+                # Method 3: structured data JSON-LD
                 if price is None:
-                    price_el = soup.select_one("div.Nx9bqj")
-                    if price_el:
-                        price = extract_price_from_text(price_el.get_text())
-
-                # Method 4: meta tag
-                if price is None:
-                    meta = soup.find("meta", {"property": "product:price:amount"})
-                    if meta:
-                        price = float(meta.get("content", "0"))
+                    script = soup.find("script", {"type": "application/ld+json"})
+                    if script:
+                        try:
+                            import json
+                            data = json.loads(script.string)
+                            if isinstance(data, list): data = data[0]
+                            price = float(data["offers"]["price"])
+                        except: pass
 
                 if price is None:
                     if attempt == retries:
-                        raise ScraperException("Price element not found on Flipkart page")
-                    time.sleep(2 ** attempt)
+                        raise ScraperException("Price not found on Flipkart")
+                    time.sleep(2)
                     continue
 
                 # ─── Extract title ───
                 title = "Unknown Product"
-                for cls in ["VU-ZEz", "B_NuCI", "yhB1nd"]:
-                    title_el = soup.find("span", class_=cls)
-                    if title_el:
-                        title = title_el.get_text().strip()
-                        break
-                if title == "Unknown Product":
-                    title_el = soup.find("h1", class_="yhB1nd")
-                    if title_el:
-                        title = title_el.find("span")
-                        title = title.get_text().strip() if title else "Unknown Product"
+                og_title = soup.find("meta", property="og:title")
+                if og_title:
+                    title = og_title.get("content", "").strip()
+                
+                if title == "Unknown Product" or not title:
+                    for cls in ["VU-ZEz", "B_NuCI", "yhB1nd"]:
+                        el = soup.find("span", class_=cls)
+                        if el:
+                            title = el.get_text().strip()
+                            break
 
                 # ─── Extract image ───
                 image_url = ""
-                
-                # Meta tags first
-                og_img = (soup.find("meta", property="og:image") or 
-                          soup.find("meta", attrs={"name": "twitter:image"}) or
-                          soup.find("meta", property="product:image"))
+                og_img = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "twitter:image"})
                 if og_img:
                     image_url = og_img.get("content", "")
 
                 if not image_url:
-                    # High priority: main image container
-                    container = soup.select_one("div._396cs4, div._2r_T1I, div.q67Yv9, div._2KpZ6l")
-                    if container:
-                        img = container.find("img")
-                        if img: image_url = img.get("src", "") or img.get("data-src", "")
+                    img_el = soup.find("img", class_="_396cs4") or soup.find("img", class_="DByuf4")
+                    if img_el:
+                        image_url = img_el.get("src", "") or img_el.get("data-src", "")
 
-                if not image_url:
-                    for cls in ["_396cs4", "DByuf4", "_2r_T1I", "_2KpZ6l", "_2am1uE"]:
-                        image_el = soup.find("img", class_=cls)
-                        if image_el:
-                            image_url = image_el.get("src", "") or image_el.get("data-src", "")
-                            break
-                
                 # Clean and ensure absolute
                 if image_url:
                     if image_url.startswith("//"):
@@ -305,9 +305,10 @@ class ScraperService:
                     elif image_url.startswith("/"):
                         image_url = "https://www.flipkart.com" + image_url
 
-                # ─── Extract description ───
-                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
-                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
+                description = "No description available."
+                desc_meta = soup.find("meta", attrs={"name": "description"})
+                if desc_meta:
+                    description = desc_meta.get("content", "").strip()
 
                 result = {
                     "price": price,
@@ -319,7 +320,7 @@ class ScraperService:
                     "timestamp": datetime.now().isoformat(),
                     "url": url,
                 }
-                logger.info(f"Flipkart scrape success: {title[:50]} = ₹{price}")
+                logger.info(f"Flipkart scrape success: {title[:40]} = ₹{price}")
                 return result
 
             except ScraperException:
