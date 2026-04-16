@@ -15,15 +15,16 @@ class Settings(BaseSettings):
     BACKEND_PORT: int = 8000
     DEBUG: bool = True
 
-    # Email (Gmail SMTP)
-    SMTP_USER: str = ""
-    SMTP_PASSWORD: str = ""
-
     # WhatsApp (Twilio)
     TWILIO_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
-    TWILIO_WHATSAPP_NUMBER: str = "+17408472410"
+    TWILIO_WHATSAPP_NUMBER: str = "+14155238886"  # Default Twilio Sandbox number
     USER_WHATSAPP_NUMBER: str = ""
+
+    # Email (Resend API - Better than SMTP for Cloud)
+    RESEND_API_KEY: str = "" # Use this instead of SMTP if on Railway Hobby plan
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
 
     # Scraping
     SCRAPE_TIMEOUT_SECONDS: int = 30

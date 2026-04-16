@@ -108,24 +108,57 @@ Price Ninja v4.0
         msg.attach(MIMEText(body, "plain"))
         msg.attach(MIMEText(html_body, "html"))
 
+        success = False
+        error_msg = None
+
         try:
-            if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_USER == "your_email@gmail.com":
-                raise AlertSendException("SMTP credentials not configured")
+            # --- Method A: Resend API (HTTP Based, Recommended for Cloud/Railway) ---
+            if settings.RESEND_API_KEY and not settings.RESEND_API_KEY.startswith("re_xxxx"):
+                try:
+                    import requests
+                    logger.info(f"Sending email via Resend API to {email}")
+                    response = requests.post(
+                        "https://api.resend.com/emails",
+                        headers={
+                            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                            "Content-Type": "application/json",
+                        },
+                        json={
+                            "from": "Price Ninja <onboarding@resend.dev>",
+                            "to": email,
+                            "subject": subject,
+                            "html": html_body,
+                            "text": body,
+                        },
+                        timeout=10
+                    )
+                    if response.status_code in (200, 201):
+                        logger.info(f"Resend email success!")
+                        success = True
+                    else:
+                        raise AlertSendException(f"Resend API Error: {response.text}")
+                except Exception as resend_err:
+                    logger.warning(f"Resend failed, trying SMTP fallback: {resend_err}")
 
-            with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
-                server.starttls()
-                server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
-                server.send_message(msg)
+            # --- Method B: SMTP (Fallback) ---
+            if not success:
+                if not settings.SMTP_USER or not settings.SMTP_PASSWORD or settings.SMTP_USER == "your_email@gmail.com":
+                    raise AlertSendException("Email credentials (Resend or SMTP) not configured")
 
-            logger.info(f"Email alert sent to {email} for {product_name}")
-            success = True
+                with smtplib.SMTP("smtp.gmail.com", 587, timeout=10) as server:
+                    server.starttls()
+                    server.login(settings.SMTP_USER, settings.SMTP_PASSWORD)
+                    server.send_message(msg)
+
+                logger.info(f"Email alert sent to {email} for {product_name}")
+                success = True
 
         except Exception as e:
             error_msg = f"EMAIL_ERROR: {str(e)}"
             if "authentication failed" in error_msg.lower():
                 error_msg = "GMAIL_AUTH_FAILED: Use an 'App Password', not your main password."
             elif "connection refused" in error_msg.lower():
-                error_msg = "SMTP_CONN_REFUSED: Railway or Gmail blocking port 587."
+                error_msg = "SMTP_CONN_REFUSED: Railway blocks port 587. Use RESEND_API_KEY instead."
             logger.error(f"Email alert failed: {error_msg}")
 
         # Record the alert
@@ -181,14 +214,17 @@ _Price Ninja v4.0_""".strip()
                 raise AlertSendException("Twilio credentials not configured")
 
             from twilio.rest import Client
+            
+            # Ensure phone has + prefix for Twilio
+            formatted_phone = phone if phone.startswith("+") else f"+{phone}"
 
             client = Client(settings.TWILIO_SID, settings.TWILIO_AUTH_TOKEN)
             client.messages.create(
                 body=message_body,
                 from_=f"whatsapp:{settings.TWILIO_WHATSAPP_NUMBER}",
-                to=f"whatsapp:{phone}",
+                to=f"whatsapp:{formatted_phone}",
             )
-            logger.info(f"WhatsApp alert sent to {phone} for {product_name}")
+            logger.info(f"WhatsApp alert sent to {formatted_phone} for {product_name}")
             success = True
 
         except Exception as e:
