@@ -81,6 +81,9 @@ async def add_product(
     user_id: Optional[str] = Depends(get_current_user_id)
 ):
     """Add a new product to track. Saves instantly, scrapes price in background."""
+    if not user_id:
+        raise HTTPException(401, "Unauthorized: user_id is required to add products.")
+
     if not is_valid_product_url(req.url):
         raise HTTPException(400, "Invalid product URL. Please provide a valid e-commerce product link (Amazon, Flipkart, Myntra, etc.).")
 
@@ -125,6 +128,8 @@ async def add_product(
 @router.get("", response_model=ApiResponse)
 async def list_products(user_id: Optional[str] = Depends(get_current_user_id)):
     """Get all tracked products."""
+    if not user_id:
+        raise HTTPException(401, "Unauthorized: user_id is required to fetch products.")
     products = storage_service.get_all_products(user_id=user_id)
     return ApiResponse(
         success=True,

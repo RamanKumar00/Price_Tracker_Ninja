@@ -8,6 +8,9 @@ import '../services/search_history_service.dart';
 import '../widgets/glass_input.dart';
 import '../widgets/neon_button.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import '../models/product.dart';
+import 'product_detail_screen.dart';
 
 
 /// Enhanced Add Product screen — dual mode (URL paste / platform browse),
@@ -37,7 +40,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
   PlatformInfo? _selectedPlatform;
   late TabController _tabController;
   List<String> _recentSearches = [];
-  List<Map<String, String>> _recentProducts = [];
   
   // Expiry states
   int _expiryIndex = 3; // Default: No Limit
@@ -65,17 +67,18 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   Future<void> _loadHistory() async {
     final searches = await SearchHistoryService.getRecentSearches();
-    final products = await SearchHistoryService.getRecentProducts();
     if (mounted) {
       setState(() {
         _recentSearches = searches;
-        _recentProducts = products;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final asyncProducts = ref.watch(productsProvider);
+    final trackedProducts = asyncProducts.valueOrNull?.reversed.take(5).toList() ?? [];
+
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -336,11 +339,11 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         ),
 
         // Recent products
-        if (_recentProducts.isNotEmpty) ...[
+        if (trackedProducts.isNotEmpty) ...[
           const SizedBox(height: 28),
           _sectionHeader('Recent Products', NinjaColors.violet),
           const SizedBox(height: 12),
-          ..._recentProducts.take(5).map((p) => _recentProductTile(p)),
+          ...trackedProducts.map((p) => _recentProductTile(p)),
         ],
 
         const SizedBox(height: 28),
@@ -591,37 +594,72 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
     );
   }
 
-  Widget _recentProductTile(Map<String, String> p) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 8),
-      padding: const EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: NinjaColors.glassBg,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: NinjaColors.border),
-      ),
-      child: Row(
-        children: [
-          Icon(Icons.history_rounded, size: 18, color: NinjaColors.textMuted),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(p['name'] ?? '',
-                    style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
-                        color: NinjaColors.textPrimary),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text(p['platform'] ?? '',
-                    style: TextStyle(
-                        fontSize: 11, color: NinjaColors.textMuted)),
-              ],
-            ),
+  Widget _recentProductTile(Product p) {
+    return GestureDetector(
+      onTap: () {
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => ProductDetailScreen(product: p),
           ),
-        ],
+        );
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: NinjaColors.glassBg,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: NinjaColors.border),
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: NinjaColors.violet.withValues(alpha: 0.1),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: p.imageUrl != null && p.imageUrl!.isNotEmpty
+                  ? ClipRRect(
+                      borderRadius: BorderRadius.circular(8),
+                      child: CachedNetworkImage(
+                        imageUrl: p.imageUrl!,
+                        fit: BoxFit.contain,
+                        placeholder: (context, url) =>
+                            const Padding(
+                              padding: EdgeInsets.all(8.0),
+                              child: CircularProgressIndicator(strokeWidth: 2, color: NinjaColors.violet),
+                            ),
+                        errorWidget: (context, url, error) =>
+                            const Icon(Icons.history_rounded, size: 20, color: NinjaColors.textMuted),
+                      ),
+                    )
+                  : const Icon(Icons.history_rounded, size: 20, color: NinjaColors.textMuted),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(p.name,
+                      style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w500,
+                          color: NinjaColors.textPrimary),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                  Text(p.platform,
+                      style: TextStyle(
+                          fontSize: 11, color: NinjaColors.textMuted)),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            const Icon(Icons.chevron_right_rounded, size: 18, color: NinjaColors.textMuted),
+          ],
+        ),
       ),
     );
   }
