@@ -121,8 +121,12 @@ Price Ninja v4.0
             success = True
 
         except Exception as e:
-            error_msg = str(e)
-            logger.error(f"Email alert failed: {e}")
+            error_msg = f"EMAIL_ERROR: {str(e)}"
+            if "authentication failed" in error_msg.lower():
+                error_msg = "GMAIL_AUTH_FAILED: Use an 'App Password', not your main password."
+            elif "connection refused" in error_msg.lower():
+                error_msg = "SMTP_CONN_REFUSED: Railway or Gmail blocking port 587."
+            logger.error(f"Email alert failed: {error_msg}")
 
         # Record the alert
         record = AlertRecord(
@@ -188,8 +192,12 @@ _Price Ninja v4.0_""".strip()
             success = True
 
         except Exception as e:
-            error_msg = str(e)
-            logger.error(f"WhatsApp alert failed: {e}")
+            error_msg = f"WHATSAPP_ERROR: {str(e)}"
+            if "sandbox" in error_msg.lower() or "63032" in error_msg:
+                error_msg = "SANDBOX_ERROR: Recipient has NOT joined your Twilio sandbox (send 'join keyword')."
+            elif "authenticate" in error_msg.lower():
+                error_msg = "TWILIO_AUTH_FAILED: Check SID and Token in Railway environment."
+            logger.error(f"WhatsApp alert failed: {error_msg}")
 
         record = AlertRecord(
             product_id=product_id,

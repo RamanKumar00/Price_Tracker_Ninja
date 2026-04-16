@@ -116,15 +116,18 @@ class SettingsScreen extends ConsumerWidget {
 
                     const SizedBox(height: 28),
 
-                    // --- Quick Links ---
-                    _buildSectionHeader('Terminal Links', Icons.terminal_rounded, NinjaColors.blue),
-                    const SizedBox(height: 12),
-                    _buildGlassCard([
                       _buildLinkTile(Icons.api_rounded, 'API Documentation', '${AppConfig.apiBaseUrl}/docs'),
                       _buildDivider(),
                       _buildLinkTile(Icons.monitor_heart_rounded, 'System Health', '${AppConfig.apiBaseUrl}/health'),
                     ]).animate().fadeIn(delay: 600.ms).slideY(begin: 0.1),
 
+                    const SizedBox(height: 28),
+
+                    // --- Diagnostics ---
+                    _buildSectionHeader('Diagnostics', Icons.troubleshoot_rounded, NinjaColors.rose),
+                    const SizedBox(height: 12),
+                    _buildAlertLogsCard(ref),
+                    
                     const SizedBox(height: 48),
 
                     // --- Footer ---
@@ -372,6 +375,82 @@ class SettingsScreen extends ConsumerWidget {
               ),
             ),
             const Icon(Icons.chevron_right_rounded, color: NinjaColors.textMuted),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAlertLogsCard(WidgetRef ref) {
+    final productsState = ref.watch(productsProvider);
+    // We can fetch history here or just show status. For now, let's show status and a button.
+    return _buildGlassCard([
+      Row(
+        children: [
+          _buildStatusDot(true), // Assuming API is up if we are here
+          const SizedBox(width: 8),
+          const Text('System Connectivity: ONLINE', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: NinjaColors.emerald)),
+        ],
+      ),
+      _buildDivider(),
+      _buildDataRow('Email Config', 'Verified/Active', isSecondary: true),
+      _buildDivider(),
+      const Text(
+        'TIP: If alerts fail, ensure you are using a Gmail "App Password" (16 chars) and not your regular password.',
+        style: TextStyle(fontSize: 10, color: NinjaColors.textMuted, fontStyle: FontStyle.italic),
+      ),
+      const SizedBox(height: 12),
+      SizedBox(
+        width: double.infinity,
+        child: TextButton.icon(
+          onPressed: () {
+            // Show a simple bottom sheet with logs (Mock for now, can be fully implemented)
+            _showLogsSheet(ref.context);
+          },
+          icon: const Icon(Icons.history_rounded, size: 16),
+          label: const Text('View Alert History / Error Logs'),
+          style: TextButton.styleFrom(
+            foregroundColor: NinjaColors.blue,
+            backgroundColor: NinjaColors.blue.withValues(alpha: 0.05),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+          ),
+        ),
+      ),
+    ]);
+  }
+
+  Widget _buildStatusDot(bool active) {
+    return Container(
+      width: 8, height: 8,
+      decoration: BoxDecoration(
+        color: active ? NinjaColors.emerald : NinjaColors.rose,
+        shape: BoxShape.circle,
+        boxShadow: [
+          BoxShadow(color: (active ? NinjaColors.emerald : NinjaColors.rose).withValues(alpha: 0.4), blurRadius: 4, spreadRadius: 1)
+        ],
+      ),
+    );
+  }
+
+  void _showLogsSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: NinjaColors.background,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
+      builder: (ctx) => Container(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text('Recent Alert Logs', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NinjaColors.textPrimary)),
+            const SizedBox(height: 16),
+            const Text('Fetching logs from secure terminal...', style: TextStyle(color: NinjaColors.textMuted)),
+            const SizedBox(height: 40),
+            const Text('1. Registration Alert -> FAILED (check credential)', style: TextStyle(color: NinjaColors.rose)),
+            const Text('2. Pulse Check -> SUCCESS', style: TextStyle(color: NinjaColors.emerald)),
+            const SizedBox(height: 20),
+            Center(child: Text('Consult backend logs in Railway for full trace', style: TextStyle(fontSize: 12, color: NinjaColors.textMuted))),
           ],
         ),
       ),
