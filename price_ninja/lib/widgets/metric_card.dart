@@ -101,7 +101,7 @@ class _MetricCardState extends State<MetricCard>
                       boxShadow: _isHovered
                           ? [
                               BoxShadow(
-                                color: accent.withValues(alpha: 0.15),
+                                color: accent.withOpacity(0.15),
                                 blurRadius: 24,
                                 offset: const Offset(0, 8),
                               ),
@@ -140,7 +140,7 @@ class _MetricCardState extends State<MetricCard>
               borderRadius: BorderRadius.circular(4),
               boxShadow: [
                 BoxShadow(
-                  color: accent.withValues(alpha: 0.4),
+                  color: accent.withOpacity(0.4),
                   blurRadius: 8,
                 ),
               ],
@@ -191,7 +191,7 @@ class _MetricCardState extends State<MetricCard>
   Widget _buildBack(Color accent) {
     return Container(
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.08),
+        color: accent.withOpacity(0.08),
         borderRadius: BorderRadius.circular(16),
       ),
       padding: const EdgeInsets.all(16),

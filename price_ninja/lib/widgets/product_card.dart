@@ -71,9 +71,9 @@ class _ProductCardState extends State<ProductCard>
         alignment: Alignment.centerRight,
         padding: const EdgeInsets.only(right: 24),
         decoration: BoxDecoration(
-          color: NinjaColors.rose.withValues(alpha: 0.15),
+          color: NinjaColors.rose.withOpacity(0.15),
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: NinjaColors.rose.withValues(alpha: 0.3)),
+          border: Border.all(color: NinjaColors.rose.withOpacity(0.3)),
         ),
         child: const Icon(Icons.delete_sweep_rounded, color: NinjaColors.rose, size: 28),
       ),
@@ -98,18 +98,18 @@ class _ProductCardState extends State<ProductCard>
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
                 color: _isHovered
-                    ? Theme.of(context).colorScheme.surface.withValues(alpha: 0.8)
+                    ? Theme.of(context).colorScheme.surface.withOpacity(0.8)
                     : Theme.of(context).colorScheme.surface,
                 borderRadius: BorderRadius.circular(16),
                 border: Border.all(
                   color: _isHovered
-                      ? accent.withValues(alpha: 0.4)
-                      : Theme.of(context).dividerColor.withValues(alpha: 0.1),
+                      ? accent.withOpacity(0.4)
+                      : Theme.of(context).dividerColor.withOpacity(0.1),
                 ),
                 boxShadow: _isHovered
                     ? [
                         BoxShadow(
-                          color: accent.withValues(alpha: 0.15),
+                          color: accent.withOpacity(0.15),
                           blurRadius: 20,
                           offset: const Offset(0, 4),
                         ),
@@ -123,10 +123,10 @@ class _ProductCardState extends State<ProductCard>
                     width: 56,
                     height: 56,
                     decoration: BoxDecoration(
-                      color: accent.withValues(alpha: 0.08),
+                      color: accent.withOpacity(0.08),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                          color: accent.withValues(alpha: 0.2)),
+                          color: accent.withOpacity(0.2)),
                     ),
                     clipBehavior: Clip.antiAlias,
                     child: p.imageUrl != null && p.imageUrl!.isNotEmpty
@@ -154,7 +154,7 @@ class _ProductCardState extends State<ProductCard>
                                     horizontal: 8, vertical: 3),
                                 decoration: BoxDecoration(
                                   color: NinjaColors.emerald
-                                      .withValues(alpha: 0.1),
+                                      .withOpacity(0.1),
                                   borderRadius: BorderRadius.circular(6),
                                 ),
                                 child: const Text(
@@ -211,7 +211,7 @@ class _ProductCardState extends State<ProductCard>
                               onTap: widget.onDelete,
                               child: Icon(
                                 Icons.delete_outline_rounded,
-                                color: NinjaColors.rose.withValues(alpha: 0.7),
+                                color: NinjaColors.rose.withOpacity(0.7),
                                 size: 22,
                               ),
                             ),
@@ -234,7 +234,7 @@ class _ProductCardState extends State<ProductCard>
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.1),
+        color: accent.withOpacity(0.1),
         borderRadius: BorderRadius.circular(6),
       ),
       child: Text(
@@ -252,10 +252,10 @@ class _ProductCardState extends State<ProductCard>
   Widget _buildShimmerIcon(Color accent) {
     return Container(
       decoration: BoxDecoration(
-        color: accent.withValues(alpha: 0.1),
+        color: accent.withOpacity(0.1),
         gradient: RadialGradient(
           colors: [
-            accent.withValues(alpha: 0.2),
+            accent.withOpacity(0.2),
             Colors.transparent,
           ],
           radius: 0.8,
@@ -265,7 +265,7 @@ class _ProductCardState extends State<ProductCard>
         child: Icon(
           Icons.shopping_bag_rounded,
           size: 24,
-          color: accent.withValues(alpha: 0.4),
+          color: accent.withOpacity(0.4),
         ).animate(onPlay: (c) => c.repeat(reverse: true))
          .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1.5.seconds),
       ),

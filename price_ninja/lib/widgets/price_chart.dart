@@ -103,7 +103,7 @@ class _PriceChartState extends State<PriceChart>
                         shape: BoxShape.circle,
                         boxShadow: [
                           BoxShadow(
-                            color: NinjaColors.violet.withValues(alpha: 0.5),
+                            color: NinjaColors.violet.withOpacity(0.5),
                             blurRadius: 6,
                           ),
                         ],
@@ -135,7 +135,7 @@ class _PriceChartState extends State<PriceChart>
                       drawVerticalLine: false,
                       horizontalInterval: range > 0 ? range / 4 : 1,
                       getDrawingHorizontalLine: (value) => FlLine(
-                        color: Colors.white.withValues(alpha: 0.04),
+                        color: Colors.white.withOpacity(0.04),
                         strokeWidth: 1,
                       ),
                     ),
@@ -220,8 +220,8 @@ class _PriceChartState extends State<PriceChart>
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                             colors: [
-                              NinjaColors.violet.withValues(alpha: 0.15),
-                              NinjaColors.blue.withValues(alpha: 0.05),
+                              NinjaColors.violet.withOpacity(0.15),
+                              NinjaColors.blue.withOpacity(0.05),
                               Colors.transparent,
                             ],
                           ),
@@ -240,7 +240,7 @@ class _PriceChartState extends State<PriceChart>
                       },
                       touchTooltipData: LineTouchTooltipData(
                         getTooltipColor: (_) =>
-                            NinjaColors.surface.withValues(alpha: 0.95),
+                            NinjaColors.surface.withOpacity(0.95),
                         tooltipRoundedRadius: 12,
                         tooltipBorder: BorderSide(
                           color: NinjaColors.border,

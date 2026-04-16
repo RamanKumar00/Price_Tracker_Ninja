@@ -74,13 +74,13 @@ class _PremiumLogoState extends State<PremiumLogo>
         ),
         borderRadius: BorderRadius.circular(widget.size * 0.28),
         border: Border.all(
-          color: Colors.cyanAccent.withValues(alpha: 0.35),
+          color: Colors.cyanAccent.withOpacity(0.35),
           width: 1.5,
         ),
         boxShadow: [
           // Cyberpunk subtle cyan outer glow
           BoxShadow(
-            color: Colors.cyanAccent.withValues(alpha: 0.15),
+            color: Colors.cyanAccent.withOpacity(0.15),
             blurRadius: widget.size * 0.3,
             offset: Offset(0, (widget.size * 0.1) - floatY),
           ),

@@ -98,8 +98,8 @@ class _AmbientOrbsPainter extends CustomPainter {
       final paint = Paint()
         ..shader = RadialGradient(
           colors: [
-            orb.color.withValues(alpha: 0.06),
-            orb.color.withValues(alpha: 0.0),
+            orb.color.withOpacity(0.06),
+            orb.color.withOpacity(0.0),
           ],
         ).createShader(Rect.fromCircle(
           center: Offset(
@@ -127,7 +127,7 @@ class _SubtleGridPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()
-      ..color = Colors.white.withValues(alpha: 0.015)
+      ..color = Colors.white.withOpacity(0.015)
       ..strokeWidth = 0.5
       ..style = PaintingStyle.stroke;
 

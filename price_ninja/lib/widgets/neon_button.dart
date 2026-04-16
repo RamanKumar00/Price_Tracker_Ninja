@@ -45,23 +45,23 @@ class _NeonButtonState extends State<NeonButton> {
             gradient: widget.outlined || widget.onPressed == null
                 ? null
                 : LinearGradient(
-                    colors: [accent, accent.withValues(alpha: 0.8)],
+                    colors: [accent, accent.withOpacity(0.8)],
                   ),
             color: widget.onPressed == null
-                ? Colors.grey.withValues(alpha: 0.2) // Disabled state color
+                ? Colors.grey.withOpacity(0.2) // Disabled state color
                 : (widget.outlined ? Colors.transparent : null),
             borderRadius: BorderRadius.circular(12),
             border: Border.all(
               color: widget.onPressed == null
                   ? Colors.transparent
                   : (widget.outlined
-                      ? (_isHovered ? accent : accent.withValues(alpha: 0.4))
+                      ? (_isHovered ? accent : accent.withOpacity(0.4))
                       : Colors.transparent),
             ),
             boxShadow: _isHovered && !widget.outlined && widget.onPressed != null
                 ? [
                     BoxShadow(
-                      color: accent.withValues(alpha: 0.3),
+                      color: accent.withOpacity(0.3),
                       blurRadius: 20,
                       offset: const Offset(0, 6),
                     ),
@@ -79,7 +79,7 @@ class _NeonButtonState extends State<NeonButton> {
                   child: CircularProgressIndicator(
                     strokeWidth: 2,
                     color: widget.onPressed == null
-                      ? Colors.grey.withValues(alpha: 0.5)
+                      ? Colors.grey.withOpacity(0.5)
                       : (widget.outlined ? accent : Colors.white),
                   ),
                 )
@@ -88,7 +88,7 @@ class _NeonButtonState extends State<NeonButton> {
                   widget.icon,
                   size: 18,
                   color: widget.onPressed == null
-                      ? Colors.grey.withValues(alpha: 0.5)
+                      ? Colors.grey.withOpacity(0.5)
                       : (widget.outlined ? accent : Colors.white),
                 ),
               if (widget.icon != null || widget.isLoading)
@@ -99,7 +99,7 @@ class _NeonButtonState extends State<NeonButton> {
                   fontSize: 14,
                   fontWeight: FontWeight.w600,
                   color: widget.onPressed == null
-                      ? Colors.grey.withValues(alpha: 0.5)
+                      ? Colors.grey.withOpacity(0.5)
                       : (widget.outlined ? accent : Colors.white),
                 ),
               ),

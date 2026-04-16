@@ -129,10 +129,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 controller: _tabController,
                 onTap: (_) => setState(() {}),
                 indicator: BoxDecoration(
-                  color: NinjaColors.violet.withValues(alpha: 0.15),
+                  color: NinjaColors.violet.withOpacity(0.15),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                      color: NinjaColors.violet.withValues(alpha: 0.3)),
+                      color: NinjaColors.violet.withOpacity(0.3)),
                 ),
                 indicatorSize: TabBarIndicatorSize.tab,
                 dividerHeight: 0,
@@ -249,9 +249,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                   duration: const Duration(milliseconds: 200),
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   decoration: BoxDecoration(
-                    color: isSelected ? NinjaColors.blue.withValues(alpha: 0.1) : NinjaColors.glassBg,
+                    color: isSelected ? NinjaColors.blue.withOpacity(0.1) : NinjaColors.glassBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: isSelected ? NinjaColors.blue.withValues(alpha: 0.3) : NinjaColors.border),
+                    border: Border.all(color: isSelected ? NinjaColors.blue.withOpacity(0.3) : NinjaColors.border),
                   ),
                   alignment: Alignment.center,
                   child: Text(
@@ -383,10 +383,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                               padding: const EdgeInsets.symmetric(
                                   vertical: 10),
                               decoration: BoxDecoration(
-                                color: p.color.withValues(alpha: 0.1),
+                                color: p.color.withOpacity(0.1),
                                 borderRadius: BorderRadius.circular(10),
                                 border: Border.all(
-                                    color: p.color.withValues(alpha: 0.2)),
+                                    color: p.color.withOpacity(0.2)),
                               ),
                               child: Column(
                                 children: [
@@ -488,9 +488,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       margin: const EdgeInsets.only(bottom: 14),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: p.color.withValues(alpha: 0.08),
+        color: p.color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: p.color.withValues(alpha: 0.2)),
+        border: Border.all(color: p.color.withOpacity(0.2)),
       ),
       child: Row(
         children: [
@@ -536,7 +536,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               width: 42,
               height: 42,
               decoration: BoxDecoration(
-                color: p.color.withValues(alpha: 0.1),
+                color: p.color.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(12),
               ),
               child: p.assetPath != null
@@ -567,7 +567,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
                 padding:
                     const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: p.color.withValues(alpha: 0.1),
+                  color: p.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Row(
@@ -617,7 +617,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               width: 40,
               height: 40,
               decoration: BoxDecoration(
-                color: NinjaColors.violet.withValues(alpha: 0.1),
+                color: NinjaColors.violet.withOpacity(0.1),
                 borderRadius: BorderRadius.circular(8),
               ),
               child: p.imageUrl != null && p.imageUrl!.isNotEmpty
@@ -677,7 +677,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           shape: BoxShape.circle,
           boxShadow: [
             BoxShadow(
-                color: color.withValues(alpha: 0.5), blurRadius: 6),
+                color: color.withOpacity(0.5), blurRadius: 6),
           ],
         ),
       ),
@@ -696,9 +696,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
       padding: const EdgeInsets.all(14),
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Text(msg,
           style: TextStyle(
@@ -765,9 +765,9 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
               margin: EdgeInsets.only(right: index == 3 ? 0 : 8),
               padding: const EdgeInsets.symmetric(vertical: 12),
               decoration: BoxDecoration(
-                color: isSelected ? NinjaColors.violet.withValues(alpha: 0.15) : NinjaColors.glassBg,
+                color: isSelected ? NinjaColors.violet.withOpacity(0.15) : NinjaColors.glassBg,
                 borderRadius: BorderRadius.circular(10),
-                border: Border.all(color: isSelected ? NinjaColors.violet.withValues(alpha: 0.4) : NinjaColors.border),
+                border: Border.all(color: isSelected ? NinjaColors.violet.withOpacity(0.4) : NinjaColors.border),
               ),
               child: Text(
                 opt['label'],
@@ -797,10 +797,10 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: isActive ? NinjaColors.emerald.withValues(alpha: 0.1) : NinjaColors.glassBg,
+          color: isActive ? NinjaColors.emerald.withOpacity(0.1) : NinjaColors.glassBg,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(
-            color: isActive ? NinjaColors.emerald.withValues(alpha: 0.3) : NinjaColors.border,
+            color: isActive ? NinjaColors.emerald.withOpacity(0.3) : NinjaColors.border,
           ),
         ),
         child: Column(
@@ -924,7 +924,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
         backgroundColor: NinjaColors.surface,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(20),
-          side: BorderSide(color: NinjaColors.emerald.withValues(alpha: 0.3)),
+          side: BorderSide(color: NinjaColors.emerald.withOpacity(0.3)),
         ),
         content: Column(
           mainAxisSize: MainAxisSize.min,
@@ -933,7 +933,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             Container(
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: NinjaColors.emerald.withValues(alpha: 0.1),
+                color: NinjaColors.emerald.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.check_circle_rounded, color: NinjaColors.emerald, size: 48),

@@ -62,7 +62,7 @@ class PredictionWidget extends ConsumerWidget {
                     width: 48,
                     height: 48,
                     decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.1),
+                      color: color.withOpacity(0.1),
                       shape: BoxShape.circle,
                     ),
                     child: Icon(Icons.auto_graph_rounded, color: color, size: 24),
@@ -90,7 +90,7 @@ class PredictionWidget extends ConsumerWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                         decoration: BoxDecoration(
-                          color: NinjaColors.violet.withValues(alpha: 0.1),
+                          color: NinjaColors.violet.withOpacity(0.1),
                           borderRadius: BorderRadius.circular(6),
                         ),
                         child: Text('${confidence.toStringAsFixed(0)}% Match',

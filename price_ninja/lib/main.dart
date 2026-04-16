@@ -100,7 +100,7 @@ class _AppShellState extends ConsumerState<_AppShell> {
           bottomNavigationBar: Container(
             decoration: BoxDecoration(
               color: Theme.of(context).scaffoldBackgroundColor,
-              border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withValues(alpha: 0.1))),
+              border: Border(top: BorderSide(color: Theme.of(context).dividerColor.withOpacity(0.1))),
             ),
             child: BottomNavigationBar(
               currentIndex: currentIndex,

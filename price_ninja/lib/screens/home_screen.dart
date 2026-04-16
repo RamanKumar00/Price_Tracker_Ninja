@@ -252,7 +252,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: NinjaColors.violet.withValues(alpha: 0.5),
+                      color: NinjaColors.violet.withOpacity(0.5),
                       blurRadius: 6,
                     ),
                   ],
@@ -308,7 +308,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(
-                      color: NinjaColors.blue.withValues(alpha: 0.5),
+                      color: NinjaColors.blue.withOpacity(0.5),
                       blurRadius: 6,
                     ),
                   ],
@@ -371,7 +371,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               shape: BoxShape.circle,
               boxShadow: [
                 BoxShadow(
-                  color: NinjaColors.violet.withValues(alpha: 0.5),
+                  color: NinjaColors.violet.withOpacity(0.5),
                   blurRadius: 6,
                 )
               ],
@@ -387,7 +387,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
             decoration: BoxDecoration(
-              color: NinjaColors.violet.withValues(alpha: 0.1),
+              color: NinjaColors.violet.withOpacity(0.1),
               borderRadius: BorderRadius.circular(6),
             ),
             child: Text('$count',
@@ -418,7 +418,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         border: Border.all(color: NinjaColors.border),
         boxShadow: [
           BoxShadow(
-            color: NinjaColors.violet.withValues(alpha: 0.1),
+            color: NinjaColors.violet.withOpacity(0.1),
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
@@ -457,7 +457,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
-                        color: NinjaColors.violet.withValues(alpha: 0.1),
+                        color: NinjaColors.violet.withOpacity(0.1),
                         borderRadius: BorderRadius.circular(6),
                       ),
                       child: Text(
@@ -500,7 +500,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         ],
       ),
     ).animate(onPlay: (c) => c.repeat(reverse: true))
-     .shimmer(duration: 3.seconds, color: NinjaColors.violet.withValues(alpha: 0.05))
+     .shimmer(duration: 3.seconds, color: NinjaColors.violet.withOpacity(0.05))
      .scale(begin: const Offset(1, 1), end: const Offset(1.01, 1.01), duration: 2.seconds);
   }
 
@@ -642,12 +642,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                 decoration: BoxDecoration(
                   color: isActive
-                      ? accent.withValues(alpha: 0.12)
+                      ? accent.withOpacity(0.12)
                       : NinjaColors.glassBg,
                   borderRadius: BorderRadius.circular(8),
                   border: Border.all(
                     color: isActive
-                        ? accent.withValues(alpha: 0.4)
+                        ? accent.withOpacity(0.4)
                         : NinjaColors.border,
                   ),
                 ),
@@ -704,7 +704,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: Shimmer.fromColors(
         baseColor: Theme.of(context).colorScheme.surface,
-        highlightColor: Theme.of(context).cardTheme.shadowColor?.withValues(alpha: 0.05) ?? Colors.grey.withValues(alpha: 0.1),
+        highlightColor: Theme.of(context).cardTheme.shadowColor?.withOpacity(0.05) ?? Colors.grey.withOpacity(0.1),
         child: Column(
           children: List.generate(
             4,
@@ -759,7 +759,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         decoration: BoxDecoration(
           color: NinjaColors.glassBg,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: NinjaColors.rose.withValues(alpha: 0.3)),
+          border: Border.all(color: NinjaColors.rose.withOpacity(0.3)),
         ),
         child: Column(
           children: [
@@ -922,14 +922,14 @@ class _WelcomeCardState extends State<_WelcomeCard>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                NinjaColors.violet.withValues(alpha: 0.12),
-                NinjaColors.blue.withValues(alpha: 0.08),
-                NinjaColors.emerald.withValues(alpha: 0.04),
+                NinjaColors.violet.withOpacity(0.12),
+                NinjaColors.blue.withOpacity(0.08),
+                NinjaColors.emerald.withOpacity(0.04),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: NinjaColors.violet.withValues(alpha: 0.2),
+              color: NinjaColors.violet.withOpacity(0.2),
             ),
             boxShadow: [
               BoxShadow(
@@ -952,9 +952,9 @@ class _WelcomeCardState extends State<_WelcomeCard>
                     child: Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: NinjaColors.violet.withValues(alpha: 0.1),
+                        color: NinjaColors.violet.withOpacity(0.1),
                         shape: BoxShape.circle,
-                        border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.2)),
+                        border: Border.all(color: NinjaColors.violet.withOpacity(0.2)),
                       ),
                       child: const Icon(Icons.analytics_outlined, size: 36, color: NinjaColors.violet),
                     ),
@@ -1034,12 +1034,12 @@ class _QuickActionCardState extends State<_QuickActionCard> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isHovered
-                ? widget.color.withValues(alpha: 0.08)
+                ? widget.color.withOpacity(0.08)
                 : NinjaColors.glassBg,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: _isHovered
-                  ? widget.color.withValues(alpha: 0.3)
+                  ? widget.color.withOpacity(0.3)
                   : NinjaColors.border,
             ),
           ),
@@ -1049,7 +1049,7 @@ class _QuickActionCardState extends State<_QuickActionCard> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: widget.color.withValues(alpha: 0.1),
+                  color: widget.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Icon(widget.icon, color: widget.color, size: 22),
@@ -1094,9 +1094,9 @@ class _PlatformChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: platform.color.withValues(alpha: 0.08),
+          color: platform.color.withOpacity(0.08),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: platform.color.withValues(alpha: 0.2)),
+          border: Border.all(color: platform.color.withOpacity(0.2)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -1144,7 +1144,7 @@ class _TrendingSection extends StatelessWidget {
                 shape: BoxShape.circle,
                 boxShadow: [
                   BoxShadow(
-                    color: NinjaColors.emerald.withValues(alpha: 0.5),
+                    color: NinjaColors.emerald.withOpacity(0.5),
                     blurRadius: 6,
                   ),
                 ],
@@ -1194,7 +1194,7 @@ class _TrendingSection extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                   decoration: BoxDecoration(
-                    color: accent.withValues(alpha: 0.1),
+                    color: accent.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text('HOT',

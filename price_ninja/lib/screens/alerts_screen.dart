@@ -62,7 +62,7 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
               loading: () => const Center(child: Padding(padding: EdgeInsets.all(20), child: CircularProgressIndicator(color: NinjaColors.violet, strokeWidth: 2))),
               error: (err, _) => Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(color: NinjaColors.rose.withValues(alpha: 0.08), borderRadius: BorderRadius.circular(12), border: Border.all(color: NinjaColors.rose.withValues(alpha: 0.15))),
+                decoration: BoxDecoration(color: NinjaColors.rose.withOpacity(0.08), borderRadius: BorderRadius.circular(12), border: Border.all(color: NinjaColors.rose.withOpacity(0.15))),
                 child: Text('Could not load history.\n$err', style: const TextStyle(color: NinjaColors.textMuted, fontSize: 13)),
               ),
               data: (alerts) {
@@ -85,7 +85,7 @@ class _AlertsScreenState extends ConsumerState<AlertsScreen> {
                     decoration: BoxDecoration(color: NinjaColors.glassBg, borderRadius: BorderRadius.circular(12), border: Border.all(color: NinjaColors.border)),
                     child: Row(children: [
                       Container(width: 36, height: 36,
-                        decoration: BoxDecoration(color: accent.withValues(alpha: 0.1), borderRadius: BorderRadius.circular(10)),
+                        decoration: BoxDecoration(color: accent.withOpacity(0.1), borderRadius: BorderRadius.circular(10)),
                         child: Icon(a.alertType == 'email' ? Icons.mail_outline_rounded : Icons.chat_outlined, color: accent, size: 18)),
                       const SizedBox(width: 12),
                       Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [

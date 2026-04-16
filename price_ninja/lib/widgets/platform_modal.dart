@@ -147,12 +147,12 @@ class _PlatformTileState extends State<_PlatformTile> {
           padding: const EdgeInsets.all(16),
           decoration: BoxDecoration(
             color: _isHovered
-                ? p.color.withValues(alpha: 0.08)
+                ? p.color.withOpacity(0.08)
                 : NinjaColors.glassBg,
             borderRadius: BorderRadius.circular(14),
             border: Border.all(
               color: _isHovered
-                  ? p.color.withValues(alpha: 0.3)
+                  ? p.color.withOpacity(0.3)
                   : NinjaColors.border,
             ),
           ),
@@ -162,7 +162,7 @@ class _PlatformTileState extends State<_PlatformTile> {
                 width: 44,
                 height: 44,
                 decoration: BoxDecoration(
-                  color: p.color.withValues(alpha: 0.1),
+                  color: p.color.withOpacity(0.1),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: p.assetPath != null
@@ -203,7 +203,7 @@ class _PlatformTileState extends State<_PlatformTile> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 12, vertical: 6),
                     decoration: BoxDecoration(
-                      color: p.color.withValues(alpha: 0.1),
+                      color: p.color.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(

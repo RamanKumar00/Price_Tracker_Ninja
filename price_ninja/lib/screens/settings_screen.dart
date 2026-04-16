@@ -164,7 +164,7 @@ class SettingsScreen extends ConsumerWidget {
                             style: GoogleFonts.jetBrainsMono(
                               fontSize: 10,
                               fontWeight: FontWeight.w800,
-                              color: NinjaColors.textSecondary.withValues(alpha: 0.5),
+                              color: NinjaColors.textSecondary.withOpacity(0.5),
                               letterSpacing: 2.0,
                             ),
                           ),
@@ -204,15 +204,15 @@ class SettingsScreen extends ConsumerWidget {
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
-            NinjaColors.violet.withValues(alpha: 0.15),
-            NinjaColors.blue.withValues(alpha: 0.05),
+            NinjaColors.violet.withOpacity(0.15),
+            NinjaColors.blue.withOpacity(0.05),
           ],
         ),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.2)),
+        border: Border.all(color: NinjaColors.violet.withOpacity(0.2)),
         boxShadow: [
           BoxShadow(
-            color: NinjaColors.violet.withValues(alpha: 0.05),
+            color: NinjaColors.violet.withOpacity(0.05),
             blurRadius: 20,
           )
         ],
@@ -222,9 +222,9 @@ class SettingsScreen extends ConsumerWidget {
           Container(
             width: 54, height: 54,
             decoration: BoxDecoration(
-              color: NinjaColors.violet.withValues(alpha: 0.2),
+              color: NinjaColors.violet.withOpacity(0.2),
               shape: BoxShape.circle,
-              border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.4)),
+              border: Border.all(color: NinjaColors.violet.withOpacity(0.4)),
             ),
             child: const Icon(Icons.person_rounded, color: NinjaColors.violet, size: 28),
           ),
@@ -331,7 +331,7 @@ class SettingsScreen extends ConsumerWidget {
         padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
-            Icon(icon, size: 18, color: NinjaColors.blue.withValues(alpha: 0.7)),
+            Icon(icon, size: 18, color: NinjaColors.blue.withOpacity(0.7)),
             const SizedBox(width: 12),
             Text(label, style: const TextStyle(fontSize: 13, color: NinjaColors.textPrimary)),
             const Spacer(),
@@ -358,7 +358,7 @@ class SettingsScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(
-                color: color.withValues(alpha: 0.1),
+                color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
               child: Icon(icon, color: color, size: 24),
@@ -411,7 +411,7 @@ class SettingsScreen extends ConsumerWidget {
           label: const Text('View Alert History / Error Logs'),
           style: TextButton.styleFrom(
             foregroundColor: NinjaColors.blue,
-            backgroundColor: NinjaColors.blue.withValues(alpha: 0.05),
+            backgroundColor: NinjaColors.blue.withOpacity(0.05),
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
         ),
@@ -426,7 +426,7 @@ class SettingsScreen extends ConsumerWidget {
         color: active ? NinjaColors.emerald : NinjaColors.rose,
         shape: BoxShape.circle,
         boxShadow: [
-          BoxShadow(color: (active ? NinjaColors.emerald : NinjaColors.rose).withValues(alpha: 0.4), blurRadius: 4, spreadRadius: 1)
+          BoxShadow(color: (active ? NinjaColors.emerald : NinjaColors.rose).withOpacity(0.4), blurRadius: 4, spreadRadius: 1)
         ],
       ),
     );
@@ -482,7 +482,7 @@ class SettingsScreen extends ConsumerWidget {
                             decoration: BoxDecoration(
                               color: NinjaColors.surface,
                               borderRadius: BorderRadius.circular(12),
-                              border: Border.all(color: isSuccess ? NinjaColors.emerald.withValues(alpha: 0.2) : NinjaColors.rose.withValues(alpha: 0.2)),
+                              border: Border.all(color: isSuccess ? NinjaColors.emerald.withOpacity(0.2) : NinjaColors.rose.withOpacity(0.2)),
                             ),
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -503,7 +503,7 @@ class SettingsScreen extends ConsumerWidget {
                                   Padding(
                                     padding: const EdgeInsets.only(top: 6),
                                     child: Text('ERROR: ${log['error_message']}', 
-                                      style: GoogleFonts.jetBrainsMono(fontSize: 11, color: NinjaColors.rose.withValues(alpha: 0.8))),
+                                      style: GoogleFonts.jetBrainsMono(fontSize: 11, color: NinjaColors.rose.withOpacity(0.8))),
                                   ),
                               ],
                             ),
@@ -538,7 +538,7 @@ class SettingsScreen extends ConsumerWidget {
         ),
         Switch.adaptive(
           value: isDark,
-          activeTrackColor: NinjaColors.violet.withValues(alpha: 0.3),
+          activeTrackColor: NinjaColors.violet.withOpacity(0.3),
           activeColor: NinjaColors.violet,
           onChanged: (val) {
             ref.read(themeProvider.notifier).setThemeMode(val ? ThemeMode.dark : ThemeMode.light);

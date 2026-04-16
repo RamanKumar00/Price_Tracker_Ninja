@@ -68,7 +68,7 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                 center: Alignment.topRight,
                 radius: 1.5,
                 colors: [
-                  _pages[_currentIndex].color.withValues(alpha: 0.15),
+                  _pages[_currentIndex].color.withOpacity(0.15),
                   NinjaColors.background,
                 ],
               ),
@@ -99,9 +99,9 @@ class _OnboardingScreenState extends ConsumerState<OnboardingScreen> {
                                 padding: const EdgeInsets.all(32),
                                 decoration: BoxDecoration(
                                   shape: BoxShape.circle,
-                                  color: data.color.withValues(alpha: 0.1),
+                                  color: data.color.withOpacity(0.1),
                                   border: Border.all(
-                                    color: data.color.withValues(alpha: 0.2),
+                                    color: data.color.withOpacity(0.2),
                                     width: 2,
                                   ),
                                 ),

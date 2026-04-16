@@ -96,7 +96,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                           color: Theme.of(context).colorScheme.surface,
                           borderRadius: BorderRadius.circular(16),
                           border: Border.all(
-                            color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+                            color: Theme.of(context).dividerColor.withOpacity(0.15),
                           ),
                         ),
                         child: Text(
@@ -166,7 +166,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         child: Container(
           margin: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: (isDark ? NinjaColors.surface : Colors.white).withValues(alpha: 0.9),
+            color: (isDark ? NinjaColors.surface : Colors.white).withOpacity(0.9),
             shape: BoxShape.circle,
             border: Border.all(
               color: isDark ? NinjaColors.border : const Color(0xFFE5E7EB),
@@ -186,7 +186,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             margin: const EdgeInsets.all(8),
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: (isDark ? NinjaColors.surface : Colors.white).withValues(alpha: 0.9),
+              color: (isDark ? NinjaColors.surface : Colors.white).withOpacity(0.9),
               shape: BoxShape.circle,
               border: Border.all(
                 color: isDark ? NinjaColors.border : const Color(0xFFE5E7EB),
@@ -238,7 +238,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     end: Alignment.bottomCenter,
                     colors: [
                       Colors.transparent,
-                      (isDark ? NinjaColors.background : Colors.white).withValues(alpha: 0.8),
+                      (isDark ? NinjaColors.background : Colors.white).withOpacity(0.8),
                       isDark ? NinjaColors.background : Colors.white,
                     ],
                   ),
@@ -254,12 +254,12 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 child: Container(
                   padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                   decoration: BoxDecoration(
-                    color: NinjaColors.emerald.withValues(alpha: 0.15),
+                    color: NinjaColors.emerald.withOpacity(0.15),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: NinjaColors.emerald.withValues(alpha: 0.4)),
+                    border: Border.all(color: NinjaColors.emerald.withOpacity(0.4)),
                     boxShadow: [
                       BoxShadow(
-                        color: NinjaColors.emerald.withValues(alpha: 0.3),
+                        color: NinjaColors.emerald.withOpacity(0.3),
                         blurRadius: 12,
                       ),
                     ],
@@ -297,9 +297,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
           decoration: BoxDecoration(
-            color: NinjaColors.violet.withValues(alpha: 0.1),
+            color: NinjaColors.violet.withOpacity(0.1),
             borderRadius: BorderRadius.circular(8),
-            border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.2)),
+            border: Border.all(color: NinjaColors.violet.withOpacity(0.2)),
           ),
           child: Text(
             p.platform.toUpperCase(),
@@ -333,7 +333,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
               const SizedBox(width: 12),
             ],
             Icon(Icons.auto_graph_rounded,
-                size: 14, color: NinjaColors.blue.withValues(alpha: 0.6)),
+                size: 14, color: NinjaColors.blue.withOpacity(0.6)),
             const SizedBox(width: 6),
             Text(
               p.lastChecked != null
@@ -366,13 +366,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
               colors: [
-                NinjaColors.violet.withValues(alpha: 0.08),
-                NinjaColors.blue.withValues(alpha: 0.05),
-                NinjaColors.emerald.withValues(alpha: 0.03),
+                NinjaColors.violet.withOpacity(0.08),
+                NinjaColors.blue.withOpacity(0.05),
+                NinjaColors.emerald.withOpacity(0.03),
               ],
             ),
             borderRadius: BorderRadius.circular(20),
-            border: Border.all(color: NinjaColors.violet.withValues(alpha: 0.15)),
+            border: Border.all(color: NinjaColors.violet.withOpacity(0.15)),
             boxShadow: [
               BoxShadow(
                 color: NinjaColors.violet.withValues(alpha: glow),
@@ -440,7 +440,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
     return Expanded(
       child: Column(
         children: [
-          Icon(icon, size: 20, color: color.withValues(alpha: 0.7)),
+          Icon(icon, size: 20, color: color.withOpacity(0.7)),
           const SizedBox(height: 8),
           Text(
             label,
@@ -460,7 +460,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             style: GoogleFonts.jetBrainsMono(
               fontSize: isMain ? (value != null ? 24 : 16) : 18,
               fontWeight: FontWeight.w800,
-              color: value != null ? color : color.withValues(alpha: 0.3),
+              color: value != null ? color : color.withOpacity(0.3),
               letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
@@ -482,9 +482,9 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       width: double.infinity,
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
+        color: color.withOpacity(0.08),
         borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: color.withValues(alpha: 0.2)),
+        border: Border.all(color: color.withOpacity(0.2)),
       ),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -541,7 +541,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         Container(
           padding: const EdgeInsets.all(8),
           decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
+            color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, size: 18, color: color),
@@ -555,7 +555,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             color: NinjaColors.textPrimary,
             letterSpacing: 1.0,
           ),
-        ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 3.seconds, color: color.withValues(alpha: 0.2)),
+        ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 3.seconds, color: color.withOpacity(0.2)),
       ],
     ).animate().fadeIn().slideX(begin: -0.05);
   }
@@ -593,7 +593,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-          color: Theme.of(context).dividerColor.withValues(alpha: 0.15),
+          color: Theme.of(context).dividerColor.withOpacity(0.15),
         ),
       ),
       child: Column(
@@ -656,7 +656,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           Container(
             padding: const EdgeInsets.all(6),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
             child: Icon(icon, size: 16, color: color),
@@ -696,7 +696,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
   Widget _divider() {
     return Divider(
-      color: Theme.of(context).dividerColor.withValues(alpha: 0.08),
+      color: Theme.of(context).dividerColor.withOpacity(0.08),
       height: 1,
     );
   }
@@ -735,7 +735,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           color: Theme.of(context).colorScheme.surface,
           borderRadius: BorderRadius.circular(16),
           border: Border.all(
-            color: color.withValues(alpha: 0.15),
+            color: color.withOpacity(0.15),
           ),
         ),
         child: Column(
@@ -746,7 +746,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                 Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: color.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Icon(icon, size: 16, color: color),
@@ -853,7 +853,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         color: isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
         gradient: RadialGradient(
           colors: [
-            NinjaColors.violet.withValues(alpha: 0.15),
+            NinjaColors.violet.withOpacity(0.15),
             isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
           ],
           radius: 0.8,
@@ -865,7 +865,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           Icon(
             Icons.shopping_bag_rounded,
             size: 100,
-            color: NinjaColors.violet.withValues(alpha: 0.2),
+            color: NinjaColors.violet.withOpacity(0.2),
           ).animate(onPlay: (controller) => controller.repeat(reverse: true))
            .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: 1.5.seconds),
           if (isDark)
