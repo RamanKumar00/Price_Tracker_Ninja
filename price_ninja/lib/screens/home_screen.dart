@@ -422,29 +422,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
-          BoxShadow(
-            color: NinjaColors.violet.withValues(alpha: 0.05),
-            blurRadius: 10,
-            spreadRadius: 2,
-          ),
         ],
-      ).animate(onPlay: (c) => c.repeat(reverse: true))
-       .custom(
-         duration: 2.seconds,
-         builder: (context, value, child) => Container(
-           decoration: BoxDecoration(
-             borderRadius: BorderRadius.circular(24),
-             boxShadow: [
-               BoxShadow(
-                 color: NinjaColors.violet.withValues(alpha: 0.05 + (value * 0.1)),
-                 blurRadius: 20 + (value * 20),
-                 spreadRadius: value * 2,
-               )
-             ]
-           ),
-           child: child,
-         ),
-         child: Column(
+      ),
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -519,7 +499,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
           ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
         ],
       ),
-    );
+    ).animate(onPlay: (c) => c.repeat(reverse: true))
+     .shimmer(duration: 3.seconds, color: NinjaColors.violet.withValues(alpha: 0.05))
+     .scale(begin: const Offset(1, 1), end: const Offset(1.01, 1.01), duration: 2.seconds);
   }
 
   Widget _buildPriceStat(String label, double? value, Color color) {
