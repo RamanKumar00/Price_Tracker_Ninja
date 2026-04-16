@@ -132,17 +132,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS – explicit origins for credentials support
+# CORS – regex for dynamic firebase subdomains
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost",
-        "http://localhost:8000",
-        "http://localhost:3000",
-        "http://localhost:5000",
-        "https://price-ninja-raman-2026.web.app",
-        "https://price-ninja-raman-2026.firebaseapp.com"
-    ],
+    allow_origin_regex=r"https://.*\.web\.app|https://.*\.firebaseapp\.com|http://localhost:.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
