@@ -97,31 +97,54 @@ async def add_product(
         whatsapp_number=req.whatsapp_number,
     )
 
-    # Save product IMMEDIATELY with placeholder — no scraping yet
+    # FAST METADATA SCRAPE (Synchronous/Blocking for 2-3s for better UX)
+    # We only get Title and Image here; background task handles the rest (price, alerts, etc.)
+    name = "Fetching details..."
+    image_url = ""
+    description = ""
+    initial_price = None
+
+    try:
+        logger.info(f"Attempting fast metadata capture for: {req.url[:60]}...")
+        # Use a short timeout to not block the user too long
+        scraped = await run_in_threadpool(scraper_service.scrape, req.url)
+        name = scraped.get("title", "Unknown Product")
+        image_url = scraped.get("image_url", "")
+        description = scraped.get("description", "")
+        initial_price = scraped.get("price")
+    except Exception as e:
+        logger.warning(f"Fast scrape failed (falling back to background): {e}")
+
     product = Product(
         user_id=user_id,
-        name=req.name or "Fetching details...",
         url=req.url,
-        platform=platform,
-        current_price=None,
-        starting_price=None,
+        platform=platform.value,
+        name=name,
+        image_url=image_url,
+        current_price=initial_price,
+        starting_price=initial_price,
+        description=description,
         target_price=req.target_price,
-        expires_at=req.expires_at,
         alert_config=alert_cfg,
+        created_at=datetime.now(),
+        last_checked=datetime.now() if initial_price else None,
     )
-    saved = storage_service.add_product(product)
+    
+    storage_service.add_product(product)
 
-    # Kick off scraping in background via FastAPI BackgroundTasks (guaranteed to run after response)
+    # background_tasks will still run to ensure full price history and initial metrics are solid
     background_tasks.add_task(
-        _background_scrape_and_update, saved.id, req.url, alert_cfg, req.target_price
+        _background_scrape_and_update, 
+        product.id, 
+        req.url, 
+        alert_cfg, 
+        req.target_price
     )
-
-    logger.info(f"Product saved instantly: {saved.id} | Background scrape started")
 
     return ApiResponse(
         success=True,
-        message=f"Product added! Price is being fetched in the background.",
-        data=saved.model_dump(),
+        message="Product added successfully. " + ("Initial fetch complete." if initial_price else "Details being fetched in background."),
+        data=product.to_dict()
     )
 
 

@@ -153,14 +153,33 @@ class ScraperService:
 
                 # ─── Extract image ───
                 image_url = ""
-                image_el = soup.find("img", id="landingImage")
+                image_el = soup.find("img", id="landingImage") or soup.find("img", id="main-image")
                 if image_el:
-                    image_url = image_el.get("data-old-hires", "") or image_el.get("src", "")
+                    # Amazon dynamic image JSON parsing
+                    dynamic_img = image_el.get("data-a-dynamic-image", "")
+                    if dynamic_img and "{" in dynamic_img:
+                        try:
+                            import json
+                            img_map = json.loads(dynamic_img)
+                            # Pick the largest image (the one with the longest URL or just first key)
+                            image_url = list(img_map.keys())[-1]
+                        except:
+                            pass
+                    
+                    if not image_url:
+                        image_url = image_el.get("data-old-hires", "") or image_el.get("src", "")
+                
                 if not image_url:
-                    # Fallback: look in image block
-                    img_block = soup.find("img", {"data-image-index": "0"})
+                    # Fallback: look in gallery or specific indexes
+                    img_block = soup.select_one("img[data-a-image-name]") or soup.select_one("img.a-dynamic-image")
                     if img_block:
                         image_url = img_block.get("src", "")
+                
+                if not image_url:
+                    # Last resort: og:image
+                    og = soup.find("meta", {"property": "og:image"}) or soup.find("meta", {"name": "twitter:image"})
+                    if og:
+                        image_url = og.get("content", "")
 
                 # ─── Extract description ───
                 desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
@@ -245,16 +264,29 @@ class ScraperService:
 
                 # ─── Extract image ───
                 image_url = ""
-                for cls in ["_396cs4", "DByuf4", "_2r_T1I"]:
-                    image_el = soup.find("img", class_=cls)
-                    if image_el:
-                        image_url = image_el.get("src", "")
-                        break
+                # High priority: main image container
+                container = soup.select_one("div._396cs4, div._2r_T1I, div.q67Yv9")
+                if container:
+                    img = container.find("img")
+                    if img: image_url = img.get("src", "")
+
                 if not image_url:
-                    # Fallback: og:image
-                    og = soup.find("meta", {"property": "og:image"})
+                    for cls in ["_396cs4", "DByuf4", "_2r_T1I", "_2KpZ6l"]:
+                        image_el = soup.find("img", class_=cls)
+                        if image_el:
+                            image_url = image_el.get("src", "")
+                            break
+                
+                if not image_url:
+                    # og:image is very reliable for Flipkart sharing
+                    og = soup.find("meta", {"property": "og:image"}) or soup.find("meta", {"name": "twitter:image"})
                     if og:
                         image_url = og.get("content", "")
+                
+                if not image_url:
+                    # Search specifically for any large product image
+                    img = soup.find("img", {"style": re.compile(r"object-fit:contain", re.I)})
+                    if img: image_url = img.get("src", "")
 
                 # ─── Extract description ───
                 desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
