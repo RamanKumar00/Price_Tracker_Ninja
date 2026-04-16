@@ -132,10 +132,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS – regex for dynamic firebase subdomains
+# CORS – very permissive regex for debugging web connectivity
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https://.*\.web\.app|https://.*\.firebaseapp\.com|http://localhost:.*",
+    allow_origin_regex=r".*", # Allow all origins for debug
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
