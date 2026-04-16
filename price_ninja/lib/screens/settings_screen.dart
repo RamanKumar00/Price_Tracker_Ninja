@@ -436,23 +436,87 @@ class SettingsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       backgroundColor: NinjaColors.background,
+      isScrollControlled: true,
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
-      builder: (ctx) => Container(
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Recent Alert Logs', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NinjaColors.textPrimary)),
-            const SizedBox(height: 16),
-            const Text('Fetching logs from secure terminal...', style: TextStyle(color: NinjaColors.textMuted)),
-            const SizedBox(height: 40),
-            const Text('1. Registration Alert -> FAILED (check credential)', style: TextStyle(color: NinjaColors.rose)),
-            const Text('2. Pulse Check -> SUCCESS', style: TextStyle(color: NinjaColors.emerald)),
-            const SizedBox(height: 20),
-            Center(child: Text('Consult backend logs in Railway for full trace', style: TextStyle(fontSize: 12, color: NinjaColors.textMuted))),
-          ],
-        ),
+      builder: (ctx) => Consumer(
+        builder: (context, ref, _) {
+          return Container(
+            constraints: BoxConstraints(maxHeight: MediaQuery.of(context).size.height * 0.7),
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text('Alert History & Errors', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: NinjaColors.textPrimary)),
+                    IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close, color: NinjaColors.textMuted)),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Expanded(
+                  child: FutureBuilder<List<dynamic>>(
+                    future: ref.read(apiServiceProvider).getAlertHistory(),
+                    builder: (context, snapshot) {
+                      if (snapshot.connectionState == ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator(color: NinjaColors.blue));
+                      }
+                      if (snapshot.hasError || !snapshot.hasData || snapshot.data!.isEmpty) {
+                        return const Center(child: Text('No alert logs found yet.', style: TextStyle(color: NinjaColors.textMuted)));
+                      }
+                      
+                      final logs = snapshot.data!;
+                      return ListView.separated(
+                        itemCount: logs.length,
+                        separatorBuilder: (_, __) => const SizedBox(height: 12),
+                        itemBuilder: (context, index) {
+                          final log = logs[index];
+                          final bool isSuccess = log['success'] ?? false;
+                          final String type = (log['alert_type'] ?? 'unknown').toString().toUpperCase();
+                          final String time = log['sent_at'] != null ? 
+                            DateTime.parse(log['sent_at']).toLocal().toString().split('.')[0] : 'Just now';
+                          
+                          return Container(
+                            padding: const EdgeInsets.all(12),
+                            decoration: BoxDecoration(
+                              color: NinjaColors.surface,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(color: isSuccess ? NinjaColors.emerald.withValues(alpha: 0.2) : NinjaColors.rose.withValues(alpha: 0.2)),
+                            ),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Icon(isSuccess ? Icons.check_circle_rounded : Icons.error_rounded, 
+                                         color: isSuccess ? NinjaColors.emerald : NinjaColors.rose, size: 16),
+                                    const SizedBox(width: 8),
+                                    Text('$type ALERT', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w800, color: isSuccess ? NinjaColors.emerald : NinjaColors.rose)),
+                                    const Spacer(),
+                                    Text(time, style: TextStyle(fontSize: 10, color: NinjaColors.textMuted)),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                Text(log['product_name'] ?? 'System Test', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: NinjaColors.textPrimary)),
+                                if (!isSuccess && log['error_message'] != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 6),
+                                    child: Text('ERROR: ${log['error_message']}', 
+                                      style: GoogleFonts.jetBrainsMono(fontSize: 11, color: NinjaColors.rose.withValues(alpha: 0.8))),
+                                  ),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
       ),
     );
   }
