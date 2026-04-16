@@ -51,7 +51,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
 
   @override
   Widget build(BuildContext context) {
-    final p = widget.product;
+    // Watch the products list and find the latest version of this specific product
+    final productsState = ref.watch(productsProvider);
+    final p = productsState.maybeWhen(
+      data: (list) => list.firstWhere((item) => item.id == widget.product.id, orElse: () => widget.product),
+      orElse: () => widget.product,
+    );
+    
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
