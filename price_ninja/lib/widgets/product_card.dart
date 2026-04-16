@@ -131,17 +131,10 @@ class _ProductCardState extends State<ProductCard>
                         ? CachedNetworkImage(
                             imageUrl: p.imageUrl!,
                             fit: BoxFit.cover,
-                            placeholder: (_, url) => Icon(
-                                Icons.shopping_bag_outlined,
-                                color: accent,
-                                size: 24),
-                            errorWidget: (_, url, err) => Icon(
-                                Icons.shopping_bag_outlined,
-                                color: accent,
-                                size: 24),
+                            placeholder: (_, url) => _buildShimmerIcon(accent),
+                            errorWidget: (_, url, err) => _buildShimmerIcon(accent),
                           )
-                        : Icon(Icons.shopping_bag_outlined,
-                            color: accent, size: 24),
+                        : _buildShimmerIcon(accent),
                   ),
                   const SizedBox(width: 14),
                   // Info
@@ -189,10 +182,11 @@ class _ProductCardState extends State<ProductCard>
                           children: [
                             Text(
                               priceStr,
-                              style: TextStyle(
+                              style: GoogleFonts.jetBrainsMono(
                                 fontSize: 20,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w800,
                                 color: Theme.of(context).colorScheme.onSurface,
+                                letterSpacing: -0.8,
                               ),
                             ),
                             const SizedBox(width: 8),
@@ -243,12 +237,35 @@ class _ProductCardState extends State<ProductCard>
       ),
       child: Text(
         platform.toUpperCase(),
-        style: TextStyle(
+        style: GoogleFonts.jetBrainsMono(
           fontSize: 10,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w700,
           color: accent,
-          letterSpacing: 0.5,
+          letterSpacing: 1.0,
         ),
+      ),
+    );
+  }
+
+  Widget _buildShimmerIcon(Color accent) {
+    return Container(
+      decoration: BoxDecoration(
+        color: accent.withValues(alpha: 0.1),
+        gradient: RadialGradient(
+          colors: [
+            accent.withValues(alpha: 0.2),
+            Colors.transparent,
+          ],
+          radius: 0.8,
+        ),
+      ),
+      child: Center(
+        child: Icon(
+          Icons.shopping_bag_rounded,
+          size: 24,
+          color: accent.withValues(alpha: 0.4),
+        ).animate(onPlay: (c) => c.repeat(reverse: true))
+         .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.1, 1.1), duration: 1.5.seconds),
       ),
     );
   }

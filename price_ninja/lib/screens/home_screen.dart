@@ -422,9 +422,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
             blurRadius: 30,
             offset: const Offset(0, 10),
           ),
+          BoxShadow(
+            color: NinjaColors.violet.withValues(alpha: 0.05),
+            blurRadius: 10,
+            spreadRadius: 2,
+          ),
         ],
-      ),
-      child: Column(
+      ).animate(onPlay: (c) => c.repeat(reverse: true))
+       .custom(
+         duration: 2.seconds,
+         builder: (context, value, child) => Container(
+           decoration: BoxDecoration(
+             borderRadius: BorderRadius.circular(24),
+             boxShadow: [
+               BoxShadow(
+                 color: NinjaColors.violet.withValues(alpha: 0.05 + (value * 0.1)),
+                 blurRadius: 20 + (value * 20),
+                 spreadRadius: value * 2,
+               )
+             ]
+           ),
+           child: child,
+         ),
+         child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
@@ -444,9 +464,9 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     ? CachedNetworkImage(
                         imageUrl: p.imageUrl!,
                         fit: BoxFit.cover,
-                        errorWidget: (_, __, ___) => const Icon(Icons.shopping_bag, color: NinjaColors.textMuted),
+                        errorWidget: (_, __, ___) => _buildShimmerIcon(),
                       )
-                    : const Icon(Icons.shopping_bag, color: NinjaColors.textMuted),
+                    : _buildShimmerIcon(),
               ).animate().scale(delay: 200.ms),
               const SizedBox(width: 16),
               // Name and Platform
@@ -518,10 +538,11 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
         const SizedBox(height: 6),
         Text(
           value != null ? '₹${value.toStringAsFixed(0)}' : '---',
-          style: GoogleFonts.inter(
-            fontSize: 18,
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 20,
             fontWeight: FontWeight.w800,
             color: color,
+            letterSpacing: -0.5,
           ),
         ),
       ],
@@ -821,6 +842,29 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
     } finally {
       ref.read(isScraping.notifier).state = false;
     }
+  }
+  
+  Widget _buildShimmerIcon() {
+    return Container(
+      decoration: const BoxDecoration(
+        color: NinjaColors.surface,
+        gradient: RadialGradient(
+          colors: [
+            Color(0x268B5CF6), // NinjaColors.violet with 15% opacity
+            NinjaColors.surface,
+          ],
+          radius: 0.8,
+        ),
+      ),
+      child: Center(
+        child: const Icon(
+          Icons.shopping_bag_rounded,
+          size: 32,
+          color: Color(0x4D8B5CF6), // NinjaColors.violet with 30% opacity
+        ).animate(onPlay: (c) => c.repeat(reverse: true))
+         .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: 1.5.seconds),
+      ),
+    );
   }
 
   void _confirmDelete(WidgetRef ref, Product p) {

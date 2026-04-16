@@ -212,26 +212,10 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
                     ),
                   ),
                 ),
-                errorWidget: (_, __, ___) => Container(
-                  color: isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
-                  child: const Icon(
-                    Icons.shopping_bag_rounded,
-                    size: 80,
-                    color: NinjaColors.textMuted,
-                  ),
-                ),
+                errorWidget: (_, __, ___) => _buildImagePlaceholder(isDark),
               )
             else
-              Container(
-                color: isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
-                child: Center(
-                  child: Icon(
-                    Icons.shopping_bag_rounded,
-                    size: 80,
-                    color: isDark ? NinjaColors.textMuted : const Color(0xFF9CA3AF),
-                  ),
-                ),
-              ),
+              _buildImagePlaceholder(isDark),
 
             // Bottom gradient fade
             Positioned(
@@ -340,16 +324,18 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
               TrendIndicator(changePercent: p.changePercent!),
               const SizedBox(width: 12),
             ],
-            Icon(Icons.access_time_rounded,
-                size: 14, color: NinjaColors.textMuted),
-            const SizedBox(width: 4),
+            Icon(Icons.auto_graph_rounded,
+                size: 14, color: NinjaColors.blue.withValues(alpha: 0.6)),
+            const SizedBox(width: 6),
             Text(
               p.lastChecked != null
-                  ? 'Checked ${_timeAgo(p.lastChecked!)}'
-                  : 'Not checked yet',
-              style: TextStyle(
-                fontSize: 12,
+                  ? 'Updated ${_timeAgo(p.lastChecked!)}'
+                  : 'Awaiting first sweep...',
+              style: GoogleFonts.jetBrainsMono(
+                fontSize: 10,
+                fontWeight: FontWeight.w500,
                 color: NinjaColors.textMuted,
+                letterSpacing: 0.5,
               ),
             ),
           ],
@@ -461,10 +447,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           const SizedBox(height: 6),
           Text(
             value != null ? '₹${value.toStringAsFixed(0)}' : '---',
-            style: GoogleFonts.inter(
-              fontSize: isMain ? 22 : 18,
+            style: GoogleFonts.jetBrainsMono(
+              fontSize: isMain ? 24 : 18,
               fontWeight: FontWeight.w800,
               color: color,
+              letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
           ),
@@ -551,13 +538,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
         ),
         const SizedBox(width: 12),
         Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 17,
-            fontWeight: FontWeight.w700,
-            color: Theme.of(context).colorScheme.onSurface,
+          title.toUpperCase(),
+          style: GoogleFonts.jetBrainsMono(
+            fontSize: 14,
+            fontWeight: FontWeight.w800,
+            color: NinjaColors.textPrimary,
+            letterSpacing: 1.0,
           ),
-        ),
+        ).animate(onPlay: (c) => c.repeat()).shimmer(duration: 3.seconds, color: color.withValues(alpha: 0.2)),
       ],
     ).animate().fadeIn().slideX(begin: -0.05);
   }
@@ -848,4 +836,47 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
       await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
+  
+  Widget _buildImagePlaceholder(bool isDark) {
+    return Container(
+      decoration: BoxDecoration(
+        color: isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
+        gradient: RadialGradient(
+          colors: [
+            NinjaColors.violet.withValues(alpha: 0.15),
+            isDark ? NinjaColors.surface : const Color(0xFFF3F4F6),
+          ],
+          radius: 0.8,
+        ),
+      ),
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Icon(
+            Icons.shopping_bag_rounded,
+            size: 100,
+            color: NinjaColors.violet.withValues(alpha: 0.2),
+          ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+           .scale(begin: const Offset(0.95, 0.95), end: const Offset(1.05, 1.05), duration: 1.5.seconds),
+          if (isDark)
+            Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                const SizedBox(height: 140),
+                Text(
+                  'Awaiting Data...',
+                  style: GoogleFonts.jetBrainsMono(
+                    color: NinjaColors.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w500,
+                    letterSpacing: 2.0,
+                  ),
+                ).animate().fadeIn(delay: 400.ms),
+              ]
+            ),
+        ],
+      ),
+    );
+  }
 }
+
