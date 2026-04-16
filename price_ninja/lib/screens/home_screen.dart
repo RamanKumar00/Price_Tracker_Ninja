@@ -933,8 +933,8 @@ class _WelcomeCardState extends State<_WelcomeCard>
             ),
             boxShadow: [
               BoxShadow(
-                color: NinjaColors.violet.withValues(alpha: glow),
-                blurRadius: 40,
+                color: NinjaColors.violet.withOpacity(glow),
+                blurRadius: 30,
                 offset: const Offset(0, 8),
               ),
             ],

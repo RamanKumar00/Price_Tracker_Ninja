@@ -380,7 +380,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             border: Border.all(color: NinjaColors.violet.withOpacity(0.15)),
             boxShadow: [
               BoxShadow(
-                color: NinjaColors.violet.withValues(alpha: glow),
+                color: NinjaColors.violet.withOpacity(glow),
                 blurRadius: 30,
                 offset: const Offset(0, 8),
               ),
