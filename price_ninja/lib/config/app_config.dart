@@ -22,8 +22,8 @@ class AppConfig {
   );
 
   // Timeouts
-  static const Duration apiTimeout = Duration(seconds: 30);
-  static const Duration scrapeTimeout = Duration(seconds: 45);
+  static const Duration apiTimeout = Duration(seconds: 60);
+  static const Duration scrapeTimeout = Duration(seconds: 90);
 
   // Pagination
   static const int defaultPageSize = 15;
