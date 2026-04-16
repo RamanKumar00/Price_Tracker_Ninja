@@ -132,10 +132,10 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS – very permissive regex for debugging web connectivity
+# CORS – fully permissive for Flutter Web connectivity
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r".*", # Allow all origins for debug
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
