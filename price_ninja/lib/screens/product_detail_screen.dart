@@ -33,12 +33,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   bool _isScraping = false;
 
   @override
-  void initState() {
-    super.initState();
-    _glowController = AnimationController(
-      vsync: this,
-      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
+
+    // If product is still in "Fetching" state, auto-trigger a refresh
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (widget.product.name == "Fetching details..." || widget.product.currentPrice == null) {
+        _scrapeProduct(widget.product);
+      }
+    });
   }
 
   @override
@@ -446,11 +448,13 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           ),
           const SizedBox(height: 6),
           Text(
-            value != null ? '₹${value.toStringAsFixed(0)}' : '---',
+            value != null 
+              ? '₹${value.toStringAsFixed(0)}' 
+              : (isMain && _isScraping ? 'FETCHING...' : '---'),
             style: GoogleFonts.jetBrainsMono(
-              fontSize: isMain ? 24 : 18,
+              fontSize: isMain ? (value != null ? 24 : 16) : 18,
               fontWeight: FontWeight.w800,
-              color: color,
+              color: value != null ? color : color.withValues(alpha: 0.3),
               letterSpacing: -0.5,
             ),
             textAlign: TextAlign.center,
