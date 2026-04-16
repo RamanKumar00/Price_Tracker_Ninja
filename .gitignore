@@ -19,6 +19,10 @@ venv/
 .DS_Store
 Thumbs.db
 
+# Firebase
+.firebase/
+.firebaserc
+
 # Secrets
 .env
 secrets.json

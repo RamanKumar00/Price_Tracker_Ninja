@@ -116,6 +116,10 @@ class SettingsScreen extends ConsumerWidget {
 
                     const SizedBox(height: 28),
 
+                    // --- Developer ---
+                    _buildSectionHeader('Developer Settings', Icons.terminal_rounded, NinjaColors.emerald),
+                    const SizedBox(height: 12),
+                    _buildGlassCard([
                       _buildLinkTile(Icons.api_rounded, 'API Documentation', '${AppConfig.apiBaseUrl}/docs'),
                       _buildDivider(),
                       _buildLinkTile(Icons.monitor_heart_rounded, 'System Health', '${AppConfig.apiBaseUrl}/health'),
