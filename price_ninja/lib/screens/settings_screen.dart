@@ -396,7 +396,7 @@ class SettingsScreen extends ConsumerWidget {
       _buildDataRow('Email Config', 'Verified/Active', isSecondary: true),
       _buildDivider(),
       const Text(
-        'TIP: If alerts fail, ensure you are using a Gmail "App Password" (16 chars) and not your regular password.',
+        'TIP: If alerts fail on Railway, use a "RESEND_API_KEY" (re_xxx) instead of SMTP. Twilio Sandbox requires sending "join keyword" first.',
         style: TextStyle(fontSize: 10, color: NinjaColors.textMuted, fontStyle: FontStyle.italic),
       ),
       const SizedBox(height: 12),
