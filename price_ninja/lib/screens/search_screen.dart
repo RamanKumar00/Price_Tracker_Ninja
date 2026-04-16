@@ -76,9 +76,6 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   @override
   Widget build(BuildContext context) {
-    final asyncProducts = ref.watch(productsProvider);
-    final trackedProducts = asyncProducts.valueOrNull?.reversed.take(5).toList() ?? [];
-
     return SafeArea(
       child: SingleChildScrollView(
         padding: const EdgeInsets.all(20),
@@ -185,6 +182,8 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
 
   // ─────────── Tab 1: Paste URL ───────────
   Widget _buildPasteUrlTab() {
+    final asyncProducts = ref.watch(productsProvider);
+    final trackedProducts = asyncProducts.valueOrNull?.reversed.take(5).toList() ?? [];
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [

@@ -23,6 +23,7 @@ class ApiService {
       requestBody: true,
       responseBody: true,
       logPrint: (obj) => print('[API] $obj'),
+    ));
     // Auth token interceptor
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
