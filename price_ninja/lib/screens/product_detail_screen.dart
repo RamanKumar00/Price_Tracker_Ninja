@@ -33,6 +33,11 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
   bool _isScraping = false;
 
   @override
+  void initState() {
+    super.initState();
+    _glowController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 3),
     )..repeat(reverse: true);
 
     // If product is still in "Fetching" state, auto-trigger a refresh
