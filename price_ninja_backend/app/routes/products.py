@@ -97,23 +97,12 @@ async def add_product(
         whatsapp_number=req.whatsapp_number,
     )
 
-    # FAST METADATA SCRAPE (Synchronous/Blocking for 2-3s for better UX)
-    # We only get Title and Image here; background task handles the rest (price, alerts, etc.)
+    # WE REMOVED THE SYNC SCRAPE to make the button instant.
+    # The UI will show "Fetching details..." while the background task runs.
     name = "Fetching details..."
     image_url = ""
     description = ""
     initial_price = None
-
-    try:
-        logger.info(f"Attempting fast metadata capture for: {req.url[:60]}...")
-        # Use a short timeout to not block the user too long
-        scraped = await run_in_threadpool(scraper_service.scrape, req.url)
-        name = scraped.get("title", "Unknown Product")
-        image_url = scraped.get("image_url", "")
-        description = scraped.get("description", "")
-        initial_price = scraped.get("price")
-    except Exception as e:
-        logger.warning(f"Fast scrape failed (falling back to background): {e}")
 
     product = Product(
         user_id=user_id,
