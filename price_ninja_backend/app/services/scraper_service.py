@@ -43,21 +43,82 @@ class ScraperService:
         self._session = requests.Session()
         self._session.headers.update({
             "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
-            "Accept-Language": "en-US,en;q=0.9,hi;q=0.8",
-            "Accept-Encoding": "gzip, deflate, br",
+            "Accept-Language": "en-US,en;q=0.9",
             "Connection": "keep-alive",
             "Upgrade-Insecure-Requests": "1",
-            "Sec-Fetch-Dest": "document",
-            "Sec-Fetch-Mode": "navigate",
-            "Sec-Fetch-Site": "none",
-            "Sec-Fetch-User": "?1",
-            "Cache-Control": "max-age=0",
         })
+
+    def _get_selenium_driver(self):
+        """Initialize a headless Chrome driver."""
+        try:
+            from selenium import webdriver
+            from selenium.webdriver.chrome.options import Options
+            from selenium.webdriver.chrome.service import Service
+            
+            options = Options()
+            options.add_argument("--headless")
+            options.add_argument("--no-sandbox")
+            options.add_argument("--disable-dev-shm-usage")
+            options.add_argument("--disable-gpu")
+            options.add_argument(f"user-agent={random.choice(USER_AGENTS)}")
+            
+            # Common paths for chromedriver in linux/docker
+            return webdriver.Chrome(options=options)
+        except Exception as e:
+            logger.error(f"Failed to initialize Selenium: {e}")
+            return None
+
+    def _scrape_with_selenium(self, url: str, price_selector: str, title_selector: str, img_selector: str) -> Dict:
+        """Fallback method using Selenium for JS-heavy or protected sites."""
+        driver = self._get_selenium_driver()
+        if not driver:
+            return {}
+        
+        try:
+            logger.info(f"Selenium fallback for: {url[:60]}")
+            driver.get(url)
+            time.sleep(5) # Wait for JS to render
+            
+            from selenium.webdriver.common.by import By
+            
+            # Try to get price
+            price = None
+            try:
+                price_text = driver.find_element(By.CSS_SELECTOR, price_selector).text
+                price = extract_price_from_text(price_text)
+            except: pass
+
+            # Try to get title
+            title = "Unknown Product"
+            try:
+                title = driver.find_element(By.CSS_SELECTOR, title_selector).text.strip()
+            except: pass
+
+            # Try to get image
+            image_url = ""
+            try:
+                img_el = driver.find_element(By.CSS_SELECTOR, img_selector)
+                image_url = img_el.get_attribute("src") or img_el.get_attribute("data-src")
+            except: pass
+
+            if price:
+                return {
+                    "price": price,
+                    "title": title,
+                    "image_url": image_url,
+                    "timestamp": datetime.now().isoformat(),
+                }
+            return {}
+        except Exception as e:
+            logger.warning(f"Selenium scrape failed: {e}")
+            return {}
+        finally:
+            driver.quit()
 
     def _rate_limit(self):
         """Enforce minimum delay between scrape requests."""
         elapsed = time.time() - self._last_scrape_time
-        min_delay = 0.5  # Fast for initial add; scheduled scrapes can be slower
+        min_delay = 1.0
         wait = min_delay - elapsed
         if wait > 0:
             time.sleep(wait)
@@ -67,24 +128,17 @@ class ScraperService:
         """Get request headers with a random User-Agent."""
         return {"User-Agent": random.choice(USER_AGENTS)}
 
-    def _fetch_page(self, url: str, timeout: int = 10) -> BeautifulSoup:
+    def _fetch_page(self, url: str, timeout: int = 15) -> BeautifulSoup:
         """Fetch a page using requests and return BeautifulSoup object."""
         headers = self._get_headers()
         try:
-            response = self._session.get(
-                url,
-                headers=headers,
-                timeout=timeout,
-                allow_redirects=True,
-            )
+            response = self._session.get(url, headers=headers, timeout=timeout)
             response.raise_for_status()
+            # If we get a 200 but it's an "Are you a human?" page
+            if "captcha" in response.text.lower() or "robot" in response.text.lower():
+                logger.warning(f"Detected CAPTCHA/Bot protection on {url}")
+                return BeautifulSoup(response.text, "lxml") # Still return to check
             return BeautifulSoup(response.text, "lxml")
-        except requests.exceptions.Timeout:
-            raise ScraperException(f"Request timed out for {url}")
-        except requests.exceptions.ConnectionError:
-            raise ScraperException(f"Connection failed for {url}")
-        except requests.exceptions.HTTPError as e:
-            raise ScraperException(f"HTTP error {e.response.status_code} for {url}")
         except Exception as e:
             raise ScraperException(f"Request failed: {e}")
 
@@ -100,7 +154,8 @@ class ScraperService:
         elif platform == Platform.EBAY:
             return self.scrape_ebay(url)
         else:
-            raise ScraperException(f"Unsupported platform for URL: {url}")
+            return self.scrape_generic(url)
+
 
     def scrape_amazon(self, url: str, retries: int = 1) -> Dict:
         """Scrape Amazon.in product details with retry logic."""
@@ -216,8 +271,31 @@ class ScraperService:
                 time.sleep(2 ** attempt)
             except Exception as e:
                 logger.error(f"Amazon scrape error (attempt {attempt}): {e}")
-                if attempt == retries:
-                    raise ScraperException(f"Amazon scrape failed: {e}")
+                if price is None:
+                    # Look for data-a-dynamic-image for better original quality image
+                    img_div = soup.find("div", id="imgTagWrapperId")
+                    if img_div:
+                        img_tag = img_div.find("img")
+                        if img_tag and img_tag.get("data-a-dynamic-image"):
+                            try:
+                                import json
+                                dynamic_imgs = json.loads(img_tag.get("data-a-dynamic-image"))
+                                image_url = list(dynamic_imgs.keys())[0] if dynamic_imgs else image_url
+                            except: pass
+                
+                # FINAL FALLBACK: Selenium (If we have no price or title)
+                if price is None or title == "Unknown Product":
+                    sel_res = self._scrape_with_selenium(
+                        url, 
+                        price_selector=".a-price-whole, #priceblock_ourprice, #priceblock_dealprice", 
+                        title_selector="#productTitle", 
+                        img_selector="#landingImage"
+                    )
+                    if sel_res:
+                        return sel_res
+
+                if not price or not title:
+                    raise ScraperException("Could not extract Amazon product data")
                 time.sleep(2 ** attempt)
 
     def scrape_flipkart(self, url: str, retries: int = 1) -> Dict:
@@ -269,8 +347,24 @@ class ScraperService:
                         except: pass
 
                 if price is None:
-                    if attempt == retries:
-                        raise ScraperException("Price not found on Flipkart")
+                    # Generic selector
+                    p_tag = soup.find("div", string=re.compile(r"₹\d+"))
+                    if p_tag:
+                        price = extract_price_from_text(p_tag.get_text())
+
+                # FINAL FALLBACK: Selenium
+                if price is None or title == "Unknown Product":
+                    sel_res = self._scrape_with_selenium(
+                        url, 
+                        price_selector="._30jeq3, ._25b18c ._30jeq3", 
+                        title_selector=".B_NuCI", 
+                        img_selector="._396cs4, ._2r_T1_"
+                    )
+                    if sel_res:
+                        return sel_res
+
+                if not price or not title:
+                    raise ScraperException("Could not extract Flipkart product data")
                     time.sleep(2)
                     continue
 
