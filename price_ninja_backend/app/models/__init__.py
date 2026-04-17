@@ -42,6 +42,10 @@ class Product(SQLModel, table=True):
     description: Optional[str] = None
     is_favorite: bool = False
     last_alert_price: Optional[float] = None
+    lowest_price: Optional[float] = None
+    highest_price: Optional[float] = None
+    average_price: Optional[float] = None
+    total_checks: int = 0
     created_at: datetime = Field(default_factory=lambda: datetime.now(IST))
     updated_at: datetime = Field(default_factory=lambda: datetime.now(IST))
     last_checked: Optional[datetime] = None
