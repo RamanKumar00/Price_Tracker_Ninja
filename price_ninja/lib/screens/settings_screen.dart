@@ -254,9 +254,15 @@ class SettingsScreen extends ConsumerWidget {
             ),
           ),
           if (user != null)
-            IconButton(
-              onPressed: () {},
-              icon: const Icon(Icons.verified_user_rounded, color: NinjaColors.emerald, size: 20),
+            TextButton.icon(
+              onPressed: () => ref.read(authServiceProvider).signOut(),
+              icon: const Icon(Icons.logout_rounded, size: 16, color: NinjaColors.rose),
+              label: const Text('LOGOUT', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: NinjaColors.rose)),
+              style: TextButton.styleFrom(
+                backgroundColor: NinjaColors.rose.withOpacity(0.05),
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+              ),
             )
         ],
       ),

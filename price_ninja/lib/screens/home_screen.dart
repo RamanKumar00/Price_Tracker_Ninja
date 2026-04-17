@@ -119,6 +119,12 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                                     letterSpacing: 1.5,
                                   ),
                                 ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => ref.read(authServiceProvider).signOut(),
+                                  borderRadius: BorderRadius.circular(4),
+                                  child: const Icon(Icons.logout_rounded, size: 14, color: NinjaColors.rose),
+                                ),
                               ],
                             ),
                           ).animate().fadeIn(duration: 600.ms).slideY(begin: 0.2);
