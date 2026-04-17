@@ -29,23 +29,28 @@ async def scrape_all_products():
     async def _scrape_one(product):
         try:
             scraped = await run_in_threadpool(scraper_service.scrape, product.url)
-            price = scraped["price"]
+            price = scraped.get("price", 0.0)
 
-            # Compute change percent
-            change = None
-            if product.current_price and product.current_price > 0:
-                change = round(((price - product.current_price) / product.current_price) * 100, 2)
+            # ONLY save entry and update metrics if price is valid (>0)
+            if price > 0:
+                 # Compute change percent
+                 change = None
+                 if product.current_price and product.current_price > 0:
+                     change = round(((price - product.current_price) / product.current_price) * 100, 2)
 
-            # Save price entry
-            entry = PriceEntry(
-                product_id=product.id,
-                price=price,
-                change_percent=change,
-            )
-            storage_service.add_price_entry(entry)
+                 # Save price entry
+                 entry = PriceEntry(
+                     product_id=product.id,
+                     price=price,
+                     change_percent=change,
+                 )
+                 storage_service.add_price_entry(entry)
 
-            # Update product metrics
-            data_service.update_product_metrics(product)
+                 # Update product metrics
+                 data_service.update_product_metrics(product)
+            else:
+                 logger.warning(f"Skipping update for {product.name} because price is 0 (Failed scrape)")
+                 return {"success": False, "product_id": product.id, "name": product.name, "error": "Price not found"}
 
             # Check and send alerts
             alerts_sent = await alert_service.check_and_alert(
@@ -124,7 +129,10 @@ async def scrape_single_product(product_id: str):
 
     try:
         scraped = await run_in_threadpool(scraper_service.scrape, product.url)
-        price = scraped["price"]
+        price = scraped.get("price", 0.0)
+        
+        if price <= 0:
+             return ApiResponse(success=False, message="Scraping failed: Price not found on page. The product may be out of stock or link is blocked.")
 
         change = None
         if product.current_price and product.current_price > 0:
@@ -152,8 +160,10 @@ async def scrape_single_product(product_id: str):
             url=product.url,
             email=product.alert_config.get("email_address", ""),
             whatsapp=product.alert_config.get("whatsapp_number", ""),
+            fcm_token=product.alert_config.get("fcm_token", ""),
             email_enabled=product.alert_config.get("email_enabled", True),
             whatsapp_enabled=product.alert_config.get("whatsapp_enabled", False),
+            push_enabled=product.alert_config.get("fcm_token", "") != "",
             last_alert_price=product.last_alert_price,
             starting_price=product.starting_price,
             expires_at=product.expires_at,
