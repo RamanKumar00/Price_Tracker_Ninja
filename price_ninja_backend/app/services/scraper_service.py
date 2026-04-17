@@ -358,13 +358,7 @@ class ScraperService:
         """Scrape Flipkart product details with retry logic."""
         self._rate_limit()
 
-        # Flipkart often blocks desktop scrapers but allows mobile ones more easily
-        mobile_headers = {
-            "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 14_8 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/14.1.2 Mobile/15E148 Safari/604.1",
-            "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-            "Accept-Language": "en-IN,en;q=0.9",
-        }
-
+        for attempt in range(1, retries + 1):
             try:
                 logger.info(f"Scraping Flipkart (attempt {attempt}): {url[:80]}...")
                 
