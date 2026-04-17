@@ -27,3 +27,7 @@ Thumbs.db
 .env
 secrets.json
 *.pem
+
+# Project Specific
+*.db
+data/

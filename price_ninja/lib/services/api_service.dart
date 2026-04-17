@@ -1,6 +1,7 @@
 /// API service for communicating with the Price Ninja backend.
 import 'package:dio/dio.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/foundation.dart';
 import '../config/app_config.dart';
 import '../models/product.dart';
 
@@ -18,12 +19,14 @@ class ApiService {
       },
     ));
 
-    // Logging interceptor
-    _dio.interceptors.add(LogInterceptor(
-      requestBody: true,
-      responseBody: true,
-      logPrint: (obj) => print('[API] $obj'),
-    ));
+    // Logging interceptor (only in debug mode for security)
+    if (kDebugMode) {
+      _dio.interceptors.add(LogInterceptor(
+        requestBody: true,
+        responseBody: true,
+        logPrint: (obj) => debugPrint('[API] $obj'),
+      ));
+    }
     // Auth token interceptor
     _dio.interceptors.add(InterceptorsWrapper(
       onRequest: (options, handler) async {
