@@ -10,6 +10,7 @@ import 'screens/alerts_screen.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 import 'screens/settings_screen.dart';
+import 'screens/auth_screen.dart';
 
 import 'providers/auth_provider.dart';
 import 'providers/theme_provider.dart';
@@ -83,7 +84,9 @@ class _AppShellState extends ConsumerState<_AppShell> {
               child: Text('Auth Error: $e',
                   style: TextStyle(color: Theme.of(context).colorScheme.error)))),
       data: (user) {
-        // user check removed from here to allow guest access
+        if (user == null) {
+          return const AuthScreen();
+        }
         final currentIndex = ref.watch(bottomNavIndexProvider);
 
         return Scaffold(
