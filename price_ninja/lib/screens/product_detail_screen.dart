@@ -342,7 +342,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             const SizedBox(width: 6),
             Text(
               p.lastChecked != null
-                  ? 'Updated ${_timeAgo(p.lastChecked!)}'
+                  ? 'Updated ${_timeAgo(p.lastChecked!.toLocal())}'
                   : 'Awaiting first sweep...',
               style: GoogleFonts.jetBrainsMono(
                 fontSize: 10,
@@ -612,14 +612,14 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
           _detailRow(
             Icons.calendar_today_rounded,
             'Tracking Since',
-            dateFormat.format(p.createdAt),
+            dateFormat.format(p.createdAt.toLocal()),
             NinjaColors.amber,
           ),
           _divider(),
           _detailRow(
             Icons.update_rounded,
             'Last Updated',
-            dateFormat.format(p.updatedAt),
+            dateFormat.format(p.updatedAt.toLocal()),
             NinjaColors.rose,
           ),
           if (p.lastChecked != null) ...[
@@ -627,7 +627,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             _detailRow(
               Icons.schedule_rounded,
               'Last Price Check',
-              dateFormat.format(p.lastChecked!),
+              dateFormat.format(p.lastChecked!.toLocal()),
               NinjaColors.blue,
             ),
           ],
@@ -643,7 +643,7 @@ class _ProductDetailScreenState extends ConsumerState<ProductDetailScreen>
             _detailRow(
               Icons.timer_off_rounded,
               'Tracking Expires',
-              dateFormat.format(p.expiresAt!),
+              dateFormat.format(p.expiresAt!.toLocal()),
               NinjaColors.rose,
             ),
           ],

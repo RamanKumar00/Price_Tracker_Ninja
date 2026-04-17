@@ -8,7 +8,7 @@ Includes rate limiting, retry logic, and user-agent rotation.
 import time
 import random
 import re
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Dict, Optional
 
 import requests
@@ -106,7 +106,7 @@ class ScraperService:
                     "price": price,
                     "title": title,
                     "image_url": image_url,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                 }
             return {}
         except Exception as e:
@@ -259,7 +259,7 @@ class ScraperService:
                     "description": description,
                     "currency": "₹",
                     "platform": Platform.AMAZON.value,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "url": url,
                 }
                 logger.info(f"Amazon scrape success: {title[:50]} = ₹{price}")
@@ -411,7 +411,7 @@ class ScraperService:
                     "description": description,
                     "currency": "₹",
                     "platform": Platform.FLIPKART.value,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "url": url,
                 }
                 logger.info(f"Flipkart scrape success: {title[:40]} = ₹{price}")
@@ -487,7 +487,7 @@ class ScraperService:
                     "description": description,
                     "currency": "₹",
                     "platform": Platform.MYNTRA.value,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "url": url,
                 }
             except ScraperException:
@@ -547,7 +547,7 @@ class ScraperService:
                     "description": description,
                     "currency": "₹",
                     "platform": Platform.EBAY.value,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "url": url,
                 }
             except ScraperException:
@@ -654,7 +654,7 @@ class ScraperService:
                     "description": description,
                     "currency": "₹",
                     "platform": platform_name,
-                    "timestamp": datetime.now().isoformat(),
+                    "timestamp": datetime.now(timezone.utc).isoformat(),
                     "url": url,
                 }
 

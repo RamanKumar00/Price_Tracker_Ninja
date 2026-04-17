@@ -3,7 +3,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, HttpUrl
 from typing import Optional, List
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum
 import uuid
 
@@ -35,7 +35,7 @@ class PriceEntry(BaseModel):
     product_id: str
     price: float
     currency: str = "₹"
-    timestamp: datetime = Field(default_factory=datetime.now)
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     change_percent: Optional[float] = None
     status: str = "ok"  # ok, error, timeout
 
@@ -57,8 +57,8 @@ class Product(BaseModel):
     alert_config: AlertConfig = Field(default_factory=AlertConfig)
     is_favorite: bool = False
     last_checked: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=datetime.now)
-    updated_at: datetime = Field(default_factory=datetime.now)
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     last_alert_price: Optional[float] = None
     starting_price: Optional[float] = None
     expires_at: Optional[datetime] = None
@@ -71,6 +71,6 @@ class AlertRecord(BaseModel):
     price: float
     target_price: float
     alert_type: AlertType
-    sent_at: datetime = Field(default_factory=datetime.now)
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc))
     success: bool = True
     error_message: Optional[str] = None
