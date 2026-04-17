@@ -77,6 +77,7 @@ class ApiService {
     bool whatsappEnabled = false,
     String emailAddress = '',
     String whatsappNumber = '',
+    String fcmToken = '',
     DateTime? expiresAt,
   }) async {
     try {
@@ -88,6 +89,7 @@ class ApiService {
         'whatsapp_enabled': whatsappEnabled,
         'email_address': emailAddress,
         'whatsapp_number': whatsappNumber,
+        'fcm_token': fcmToken,
         'expires_at': expiresAt?.toIso8601String(),
       });
       return Product.fromJson(response.data['data']);

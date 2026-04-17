@@ -41,6 +41,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
     bool whatsappEnabled = false,
     String emailAddress = '',
     String whatsappNumber = '',
+    String fcmToken = '',
     DateTime? expiresAt,
   }) async {
     final product = await _api.addProduct(
@@ -51,6 +52,7 @@ class ProductsNotifier extends StateNotifier<AsyncValue<List<Product>>> {
       whatsappEnabled: whatsappEnabled,
       emailAddress: emailAddress,
       whatsappNumber: whatsappNumber,
+      fcmToken: fcmToken,
       expiresAt: expiresAt,
     );
     await loadProducts();

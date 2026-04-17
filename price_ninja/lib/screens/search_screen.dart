@@ -9,6 +9,7 @@ import '../widgets/glass_input.dart';
 import '../widgets/neon_button.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 import '../models/product.dart';
 import 'product_detail_screen.dart';
 
@@ -858,6 +859,13 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
           double.tryParse(_targetPriceController.text.trim()) ?? 0;
       final email = _emailController.text.trim();
       final whatsapp = _whatsappController.text.trim();
+      
+      String fcmToken = '';
+      try {
+        fcmToken = await FirebaseMessaging.instance.getToken() ?? '';
+      } catch (e) {
+        debugPrint('FCM Token Fetch Error: $e');
+      }
 
       DateTime? expiresAt;
       final days = _expiryOptions[_expiryIndex]['days'];
@@ -873,6 +881,7 @@ class _SearchScreenState extends ConsumerState<SearchScreen>
             whatsappEnabled: _whatsappEnabled,
             emailAddress: email,
             whatsappNumber: whatsapp,
+            fcmToken: fcmToken,
             expiresAt: expiresAt,
           );
 
