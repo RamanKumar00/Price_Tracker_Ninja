@@ -12,6 +12,28 @@ from app.utils.logger import get_logger
 from app.utils.exceptions import AlertSendException
 from config import settings
 from starlette.concurrency import run_in_threadpool
+import firebase_admin
+from firebase_admin import credentials, messaging
+
+import json
+
+# Initialize Firebase (Global singleton)
+firebase_app = None
+try:
+    # Try to load from environment variable or local file
+    service_account_info = os.environ.get("FIREBASE_SERVICE_ACCOUNT_JSON")
+    if service_account_info:
+        # Load from JSON string in env var (common for Railway)
+        creds_content = json.loads(service_account_info)
+        cred = credentials.Certificate(creds_content)
+        firebase_app = firebase_admin.initialize_app(cred)
+        print("✅ Firebase Admin SDK initialized from ENV")
+    else:
+        # Fallback to default (might not work in cloud without file)
+        firebase_app = firebase_admin.initialize_app()
+        print("✅ Firebase Admin initialized with defaults")
+except Exception as e:
+    print(f"⚠️ Firebase Admin Error: {e}")
 
 logger = get_logger("alerts")
 
@@ -379,7 +401,36 @@ Price Ninja v4.0
         storage_service.add_alert_record(record)
         return success
 
-    async def check_and_alert(self, product_id, product_name, current_price, target_price, url, email="", whatsapp="", email_enabled=True, whatsapp_enabled=False, last_alert_price=None, starting_price=None, expires_at=None):
+    async def send_push_notification(self, token: str, title: str, body: str, product_id: str = "") -> bool:
+        """Send In-App Push Notification via Firebase (FCM)."""
+        if not firebase_app or not token or "xxx" in token.lower():
+            logger.warning("FCM Skip: App not initialized or token missing")
+            return False
+
+        try:
+            message = messaging.Message(
+                notification=messaging.Notification(
+                    title=title,
+                    body=body,
+                ),
+                data={
+                    "product_id": str(product_id),
+                    "click_action": "FLUTTER_NOTIFICATION_CLICK"
+                },
+                token=token,
+            )
+            
+            def _send_fcm():
+                return messaging.send(message)
+
+            response = await run_in_threadpool(_send_fcm)
+            logger.info(f"FCM Notification sent! Response: {response}")
+            return True
+        except Exception as e:
+            logger.error(f"FCM Error: {e}")
+            return False
+
+    async def check_and_alert(self, product_id, product_name, current_price, target_price, url, email="", whatsapp="", fcm_token="", email_enabled=True, whatsapp_enabled=False, push_enabled=True, last_alert_price=None, starting_price=None, expires_at=None):
         """Check if price dropped below target and send alerts."""
         if expires_at and expires_at < datetime.now(): return 0
         if current_price >= target_price: return 0
@@ -387,13 +438,23 @@ Price Ninja v4.0
         if last_alert_price is not None and abs(current_price - last_alert_price) < (last_alert_price * 0.01): return 0
         
         sent = 0
+        # 1. Email Alert
         if email_enabled and email:
             if await self.send_email_alert(email, product_name, current_price, target_price, url, product_id, starting_price):
                 sent += 1
 
+        # 2. WhatsApp Alert (Limited)
         if whatsapp_enabled and whatsapp:
             if await self.send_whatsapp_alert(whatsapp, product_name, current_price, target_price, url, product_id, starting_price):
                 sent += 1
+
+        # 3. PUSH NOTIFICATION (Unlimited & FREE!)
+        if push_enabled and fcm_token:
+            title = f"🎯 Target Hit: {product_name[:30]}..."
+            body = f"The price has dropped to ₹{current_price:,.0f}! Tap to view."
+            if await self.send_push_notification(fcm_token, title, body, product_id):
+                sent += 1
+                
         return sent
 
     async def send_registration_confirmation(self, product_name, target_price, current_price, email="", whatsapp="", email_enabled=True, whatsapp_enabled=False, product_id="", expires_at=None):

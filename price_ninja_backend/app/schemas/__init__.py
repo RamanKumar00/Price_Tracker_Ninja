@@ -16,6 +16,7 @@ class AddProductRequest(BaseModel):
     browser_enabled: bool = True
     email_address: str = ""
     whatsapp_number: str = ""
+    fcm_token: str = ""
     expires_at: Optional[datetime] = None
 
 

@@ -102,6 +102,7 @@ async def add_product(
         "browser_enabled": req.browser_enabled,
         "email_address": req.email_address,
         "whatsapp_number": req.whatsapp_number,
+        "fcm_token": req.fcm_token,
     }
 
     # The UI will show "Fetching details..." while the background task runs.
