@@ -169,16 +169,28 @@ async def list_products(
     offset: int = 0,
     user_id: Optional[str] = Depends(get_current_user_id)
 ):
-    """Get tracked products with pagination."""
+    """Get tracked products for the current user with automatic cleanup of stuck tasks."""
     if not user_id:
-        raise HTTPException(401, "Unauthorized: user_id is required to fetch products.")
+        raise HTTPException(401, "Unauthorized")
+        
     products = storage_service.get_all_products(user_id=user_id)
-    # Manual slicing for now, storage_service can be optimized further later
-    sliced = products[offset : offset + limit]
+    
+    # ─── AUTO-CLEANUP ───
+    # If a product is stuck in "Fetching details..." for more than 5 minutes, mark it as failed.
+    # This prevents the UI from looking broken if a background task crashed.
+    now = datetime.now(IST)
+    for p in products:
+        if p.name == "Fetching details..." and p.created_at:
+             if now - p.created_at > timedelta(minutes=5):
+                 p.name = "Details Unavailable (Request Blocked)"
+                 if not p.image_url:
+                     p.image_url = "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-616.jpg"
+                 storage_service.update_product(p)
+             
     return ApiResponse(
         success=True,
-        message=f"{len(sliced)} products found",
-        data=[p.model_dump() for p in sliced],
+        message=f"{len(products)} products found",
+        data=[p.model_dump() for p in products],
     )
 
 
