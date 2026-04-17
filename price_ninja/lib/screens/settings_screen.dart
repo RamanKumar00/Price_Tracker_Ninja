@@ -97,13 +97,17 @@ class SettingsScreen extends ConsumerWidget {
                     // --- Integrations ---
                     _buildSectionHeader('Notifications', Icons.notifications_active_rounded, NinjaColors.amber),
                     const SizedBox(height: 12),
-                    _buildActionCard(
-                      'WhatsApp Integration', 
-                      'Configure Twilio sandbox & routing', 
-                      Icons.chat_bubble_outline_rounded, 
-                      NinjaColors.emerald,
-                      () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WhatsAppConfigScreen()))
-                    ).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
+                    _buildGlassCard([
+                      _buildPushNotificationStatus(ref),
+                      _buildDivider(),
+                      _buildActionTile(
+                        'WhatsApp Integration', 
+                        'Manage routing & sandbox', 
+                        Icons.chat_bubble_outline_rounded, 
+                        NinjaColors.emerald,
+                        () => Navigator.push(context, MaterialPageRoute(builder: (_) => const WhatsAppConfigScreen()))
+                      ),
+                    ]).animate().fadeIn(delay: 400.ms).slideY(begin: 0.1),
 
                     const SizedBox(height: 28),
 
@@ -352,43 +356,93 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildActionCard(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
+  Widget _buildActionTile(String title, String subtitle, IconData icon, Color color, VoidCallback onTap) {
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(16),
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: NinjaColors.surface,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: NinjaColors.border),
-        ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(vertical: 8),
         child: Row(
           children: [
             Container(
-              padding: const EdgeInsets.all(10),
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
                 shape: BoxShape.circle,
               ),
-              child: Icon(icon, color: color, size: 24),
+              child: Icon(icon, color: color, size: 18),
             ),
-            const SizedBox(width: 16),
+            const SizedBox(width: 12),
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(title, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: NinjaColors.textPrimary)),
-                  const SizedBox(height: 2),
-                  Text(subtitle, style: TextStyle(fontSize: 12, color: NinjaColors.textMuted)),
+                  Text(title, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: NinjaColors.textPrimary)),
+                  Text(subtitle, style: TextStyle(fontSize: 11, color: NinjaColors.textMuted)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: NinjaColors.textMuted),
+            const Icon(Icons.chevron_right_rounded, size: 16, color: NinjaColors.textMuted),
           ],
         ),
       ),
     );
+  }
+
+  Widget _buildPushNotificationStatus(WidgetRef ref) {
+    return FutureBuilder<String?>(
+      future: FirebaseMessaging.instance.getToken(),
+      builder: (context, snapshot) {
+        final bool isOnline = snapshot.hasData && snapshot.data != null;
+        return Column(
+          children: [
+            Row(
+              children: [
+                _buildStatusDot(isOnline),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text('In-App Push Engine', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: NinjaColors.textPrimary)),
+                      Text(isOnline ? 'Authenticated & Active' : 'Connecting to Firebase...', 
+                        style: TextStyle(fontSize: 11, color: isOnline ? NinjaColors.emerald : NinjaColors.textMuted)),
+                    ],
+                  ),
+                ),
+                TextButton(
+                  onPressed: isOnline ? () => _sendTestPush(context, ref, snapshot.data!) : null,
+                  style: TextButton.styleFrom(
+                    backgroundColor: NinjaColors.amber.withOpacity(0.1),
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                  ),
+                  child: const Text('TEST', style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: NinjaColors.amber)),
+                ),
+              ],
+            ),
+          ],
+        );
+      }
+    );
+  }
+
+  void _sendTestPush(BuildContext context, WidgetRef ref, String token) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Triggering test push...'), duration: Duration(seconds: 1)),
+    );
+    
+    // Call backend to send a test alert
+    try {
+      final api = ref.read(apiServiceProvider);
+      // We will create a new endpoint or reuse test alert logic
+      // For now, let's use a mock-like direct call if available
+      await api.sendTestAlert(
+        alertType: 'push',
+        emailAddress: token, // Re-using email field for token in test route
+      );
+    } catch (e) {
+      debugPrint('Test push failed: $e');
+    }
   }
 
   Widget _buildAlertLogsCard(WidgetRef ref) {
