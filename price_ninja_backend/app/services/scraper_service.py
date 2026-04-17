@@ -160,42 +160,57 @@ class ScraperService:
             return None
 
     def scrape(self, url: str) -> Dict:
-        """Entry point for scraping with global retry mechanism."""
+        """Entry point for scraping with global safety and retry mechanism."""
         max_retries = 3
         last_error = "Unknown error"
 
-        for attempt in range(1, max_retries + 1):
-            try:
-                platform = detect_platform(url)
-                logger.info(f"Attempt {attempt}/{max_retries} for {platform.value}: {url[:60]}")
+        try:
+            platform = detect_platform(url)
+            for attempt in range(1, max_retries + 1):
+                try:
+                    logger.info(f"Attempt {attempt}/{max_retries} for {platform.value}: {url[:60]}")
+                    
+                    if platform == Platform.AMAZON:
+                        res = self.scrape_amazon(url)
+                    elif platform == Platform.FLIPKART:
+                        res = self.scrape_flipkart(url)
+                    elif platform == Platform.MYNTRA:
+                        res = self.scrape_myntra(url)
+                    elif platform == Platform.EBAY:
+                        res = self.scrape_ebay(url)
+                    else:
+                        res = self.scrape_generic(url)
+                    
+                    if res and res.get("price"):
+                        return res
+                    
+                    last_error = "Price not found in response"
+                    
+                except Exception as e:
+                    last_error = str(e)
+                    logger.warning(f"Attempt {attempt} failed: {e}")
                 
-                if platform == Platform.AMAZON:
-                    res = self.scrape_amazon(url)
-                elif platform == Platform.FLIPKART:
-                    res = self.scrape_flipkart(url)
-                elif platform == Platform.MYNTRA:
-                    res = self.scrape_myntra(url)
-                elif platform == Platform.EBAY:
-                    res = self.scrape_ebay(url)
-                else:
-                    res = self.scrape_generic(url)
-                
-                if res and res.get("price"):
-                    return res
-                
-                last_error = "Price not found in response"
-                
-            except Exception as e:
-                last_error = str(e)
-                logger.warning(f"Attempt {attempt} failed: {e}")
-            
-            if attempt < max_retries:
-                # Exponential backoff + jitter
-                sleep_time = (2 ** attempt) + random.uniform(0, 2)
-                logger.info(f"Retrying in {sleep_time:.1f}s...")
-                time.sleep(sleep_time)
+                if attempt < max_retries:
+                    sleep_time = (2 ** attempt) + random.uniform(0, 1)
+                    time.sleep(sleep_time)
 
-        raise ScraperException(f"Failed after {max_retries} attempts. Last error: {last_error}")
+            # If we reach here, all attempts failed
+            return {
+                "price": 0.0,
+                "title": "Product Details Unavailable",
+                "image_url": "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-616.jpg",
+                "platform": platform.value,
+                "error": True,
+                "message": last_error
+            }
+        except Exception as e:
+            logger.error(f"Critical scrape failure: {e}")
+            return {
+                "price": 0.0,
+                "title": "Link Analysis Failed",
+                "image_url": "",
+                "error": True
+            }
 
 
     def scrape_amazon(self, url: str, retries: int = 1) -> Dict:
@@ -226,36 +241,34 @@ class ScraperService:
                 price = None
 
                 # Method 1: a-price-whole (most common)
-                price_el = soup.find("span", class_="a-price-whole")
+                price_el = soup.select_one("span.a-price-whole")
                 if price_el:
                     price = extract_price_from_text(price_el.get_text())
 
-                # Method 2: a-price span
+                # Method 2: a-offscreen
                 if price is None:
-                    price_el = soup.find("span", class_="a-price")
+                    price_el = soup.select_one(".a-price .a-offscreen, #priceblock_ourprice, #priceblock_dealprice")
                     if price_el:
-                        inner = price_el.find("span", class_="a-offscreen")
-                        if inner:
-                            price = extract_price_from_text(inner.get_text())
+                        price = extract_price_from_text(price_el.get_text())
 
-                # Method 3: priceblock_dealprice or priceblock_ourprice
+                # Method 3: JSON-LD
                 if price is None:
-                    for pid in ["priceblock_dealprice", "priceblock_ourprice", "price_inside_buybox"]:
-                        el = soup.find("span", id=pid)
-                        if el:
-                            price = extract_price_from_text(el.get_text())
-                            break
-
-                # Method 4: corePriceDisplay
-                if price is None:
-                    core_price = soup.select_one("div#corePriceDisplay_desktop_feature_div span.a-offscreen")
-                    if core_price:
-                        price = extract_price_from_text(core_price.get_text())
+                    script = soup.find("script", {"type": "application/ld+json"})
+                    if script:
+                         import json
+                         try:
+                             data = json.loads(script.string)
+                             if isinstance(data, list): data = data[0]
+                             price = float(data["offers"]["price"])
+                         except: pass
 
                 if price is None:
+                    # Final attempt with Selenium
+                    sel_res = self._scrape_with_selenium(url, ".a-price-whole", "#productTitle", "#landingImage")
+                    if sel_res and sel_res.get("price"): return sel_res
+                    
                     if attempt == retries:
-                        raise ScraperException("Price element not found on Amazon page")
-                    time.sleep(2 ** attempt)
+                         raise ScraperException("Could not find price on Amazon")
                     continue
 
                 # ─── Extract title ───

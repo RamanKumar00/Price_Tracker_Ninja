@@ -457,12 +457,21 @@ Price Ninja v4.0
                 
         return sent
 
-    async def send_registration_confirmation(self, product_name, target_price, current_price, email="", whatsapp="", email_enabled=True, whatsapp_enabled=False, product_id="", expires_at=None):
+    async def send_registration_confirmation(self, product_name, target_price, current_price, email="", whatsapp="", fcm_token="", email_enabled=True, whatsapp_enabled=False, push_enabled=True, product_id="", expires_at=None):
         """Send a registration confirmation."""
         sent = 0
         price_str = f"₹{current_price:,.0f}" if current_price else "Fetching..."
         expiry_str = f"Tracking until: {expires_at.strftime('%d %b %Y')}" if expires_at else "Tracking until you stop it."
 
+        # 1. PUSH CONFIRMATION (Fastest)
+        if push_enabled and fcm_token:
+            logger.info(f"Triggering Push confirmation for {product_id}")
+            title = "🥷 Tracker Active!"
+            body = f"We've started tracking '{product_name[:20]}...'. Current price: {price_str}. We'll alert you on price drop!"
+            if await self.send_push_notification(fcm_token, title, body, product_id):
+                sent += 1
+
+        # 2. Email Confirmation
         if email_enabled and email:
             logger.info(f"Triggering email confirmation for {email}")
             subject = f"🥷 Tracker Active: {product_name[:30]}..."

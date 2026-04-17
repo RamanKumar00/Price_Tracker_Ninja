@@ -41,8 +41,10 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
             current_price=product.current_price,
             email=alert_config.get("email_address", ""),
             whatsapp=alert_config.get("whatsapp_number", ""),
+            fcm_token=alert_config.get("fcm_token", ""),
             email_enabled=alert_config.get("email_enabled", True),
             whatsapp_enabled=alert_config.get("whatsapp_enabled", False),
+            push_enabled=alert_config.get("fcm_token", "") != "",
             product_id=product_id,
         )
     except Exception as e:
@@ -61,21 +63,39 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
         if not product.description:
             product.description = scraped.get("description", "No description available.")
 
-        price = scraped["price"]
+        price = scraped.get("price", 0.0)
         product.current_price = price
-        product.starting_price = price
+        if product.starting_price == 0:
+            product.starting_price = price
         storage_service.update_product(product)
 
-        # Save initial price entry
-        entry = PriceEntry(product_id=product_id, price=price)
-        storage_service.add_price_entry(entry)
-        data_service.update_product_metrics(product)
-        logger.info(f"[BG] Scrape success for {product.name}: ₹{price}")
+        # Save initial price entry if we got a valid price
+        if price > 0:
+            entry = PriceEntry(product_id=product_id, price=price)
+            storage_service.add_price_entry(entry)
+            data_service.update_product_metrics(product)
+            logger.info(f"[BG] Scrape success for {product.name}: ₹{price}")
+        else:
+            logger.warning(f"[BG] Scrape completed but no price found for {product_id}")
 
     except ScraperException as e:
         logger.warning(f"[BG] Initial scrape failed for {product_id}: {e}")
+        _mark_product_as_failed(product_id)
     except Exception as e:
         logger.error(f"[BG] Unexpected error during scrape for {product_id}: {e}")
+        _mark_product_as_failed(product_id)
+
+def _mark_product_as_failed(product_id: str):
+    """Update product name so user isn't stuck with 'Fetching details...'"""
+    try:
+        product = storage_service.get_product(product_id)
+        if product and product.name == "Fetching details...":
+            product.name = "Details Unavailable (Try again later)"
+            if not product.image_url:
+                product.image_url = "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-616.jpg"
+            storage_service.update_product(product)
+    except Exception as e:
+        logger.error(f"Failed to mark product as failed: {e}")
 
 
 
