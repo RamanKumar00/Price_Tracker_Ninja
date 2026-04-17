@@ -32,6 +32,23 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
         logger.warning(f"[BG] Product {product_id} not found starting background task")
         return
 
+    # 1. IMMEDIATE Confirmation Alert
+    try:
+        logger.info(f"[BG] Sending instant registration confirmation for {product_id}")
+        await alert_service.send_registration_confirmation(
+            product_name=product.name if product.name != "Fetching details..." else "Your Product Tracking Request",
+            target_price=target_price,
+            current_price=product.current_price,
+            email=alert_config.get("email_address", ""),
+            whatsapp=alert_config.get("whatsapp_number", ""),
+            email_enabled=alert_config.get("email_enabled", True),
+            whatsapp_enabled=alert_config.get("whatsapp_enabled", False),
+            product_id=product_id,
+        )
+    except Exception as e:
+        logger.error(f"[BG] Failed to send registration confirmation: {e}")
+
+    # 2. PERFORM Scrape
     try:
         logger.info(f"[BG] Starting background scrape for product {product_id}")
         scraped = await run_in_threadpool(scraper_service.scrape, url)
@@ -60,20 +77,7 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
     except Exception as e:
         logger.error(f"[BG] Unexpected error during scrape for {product_id}: {e}")
 
-    # ALWAYS try to send confirmation, even if scrape failed (price will show as "Fetching...")
-    try:
-        await alert_service.send_registration_confirmation(
-            product_name=product.name,
-            target_price=target_price,
-            current_price=product.current_price,
-            email=alert_config.get("email_address", ""),
-            whatsapp=alert_config.get("whatsapp_number", ""),
-            email_enabled=alert_config.get("email_enabled", True),
-            whatsapp_enabled=alert_config.get("whatsapp_enabled", False),
-            product_id=product_id,
-        )
-    except Exception as e:
-        logger.error(f"[BG] Failed to send registration confirmation: {e}")
+
 
 
 
