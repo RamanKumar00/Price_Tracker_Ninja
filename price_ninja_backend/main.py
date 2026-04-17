@@ -132,18 +132,14 @@ app = FastAPI(
     redoc_url="/redoc",
 )
 
-# CORS – hardened for Flutter Web connectivity
-origins = [
-    "http://localhost",
-    "http://localhost:8000",
-    "http://localhost:3000",
-    "https://price-ninja-raman-2026.web.app",
-    "https://price-ninja-raman-2026.firebaseapp.com",
-]
-
+# CORS – Super Permissive for Flutter Web (Development & Production)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=[
+        "https://price-ninja-raman-2026.web.app",
+        "https://price-ninja-raman-2026.firebaseapp.com",
+    ],
+    allow_origin_regex=r"http://localhost(:\d+)?", # Allows any localhost port
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
