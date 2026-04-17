@@ -27,14 +27,14 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 
 async def _background_scrape_and_update(product_id: str, url: str, alert_config: AlertConfig, target_price: float):
     """Run scrape in background after product is saved. Updates price, title, image."""
+    product = storage_service.get_product(product_id)
+    if not product:
+        logger.warning(f"[BG] Product {product_id} not found starting background task")
+        return
+
     try:
         logger.info(f"[BG] Starting background scrape for product {product_id}")
         scraped = await run_in_threadpool(scraper_service.scrape, url)
-
-        product = storage_service.get_product(product_id)
-        if not product:
-            logger.warning(f"[BG] Product {product_id} not found after scrape")
-            return
 
         # Update product with scraped data
         if product.name in ("Fetching details...", "Unknown Product", ""):
@@ -53,25 +53,28 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
         entry = PriceEntry(product_id=product_id, price=price)
         storage_service.add_price_entry(entry)
         data_service.update_product_metrics(product)
+        logger.info(f"[BG] Scrape success for {product.name}: ₹{price}")
 
-        logger.info(f"[BG] Scrape done for {product.name}: ₹{price}")
+    except ScraperException as e:
+        logger.warning(f"[BG] Initial scrape failed for {product_id}: {e}")
+    except Exception as e:
+        logger.error(f"[BG] Unexpected error during scrape for {product_id}: {e}")
 
-        # Send confirmation alert (also non-blocking)
+    # ALWAYS try to send confirmation, even if scrape failed (price will show as "Fetching...")
+    try:
         await alert_service.send_registration_confirmation(
             product_name=product.name,
             target_price=target_price,
-            current_price=price,
+            current_price=product.current_price,
             email=alert_config.email_address,
             whatsapp=alert_config.whatsapp_number,
             email_enabled=alert_config.email_enabled,
             whatsapp_enabled=alert_config.whatsapp_enabled,
             product_id=product_id,
         )
-
-    except ScraperException as e:
-        logger.warning(f"[BG] Scrape failed for {product_id}: {e}")
     except Exception as e:
-        logger.error(f"[BG] Unexpected error for {product_id}: {e}")
+        logger.error(f"[BG] Failed to send registration confirmation: {e}")
+
 
 
 @router.post("/add", response_model=ApiResponse)
