@@ -159,7 +159,13 @@ class ApiService {
 
   Future<Map<String, dynamic>> scrapeAll() async {
     try {
-      final response = await _dio.post('/api/scrape/now');
+      final response = await _dio.post(
+        '/api/scrape/now',
+        options: Options(
+          receiveTimeout: const Duration(minutes: 3),
+          sendTimeout: const Duration(minutes: 3),
+        ),
+      );
       return response.data['data'] as Map<String, dynamic>;
     } catch (e) {
       throw _handleError(e);

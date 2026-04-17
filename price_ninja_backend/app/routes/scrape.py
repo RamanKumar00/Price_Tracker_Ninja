@@ -19,14 +19,14 @@ router = APIRouter(prefix="/api/scrape", tags=["Scraping"])
 
 @router.post("/now", response_model=ApiResponse)
 async def scrape_all_products():
-    """Scrape prices for all tracked products."""
+    """Scrape prices for all tracked products in parallel."""
     products = storage_service.get_all_products()
     if not products:
         return ApiResponse(success=True, message="No products to scrape", data=[])
 
     result = ScrapeResult()
 
-    for product in products:
+    async def _scrape_one(product):
         try:
             scraped = await run_in_threadpool(scraper_service.scrape, product.url)
             price = scraped["price"]
@@ -47,14 +47,6 @@ async def scrape_all_products():
             # Update product metrics
             data_service.update_product_metrics(product)
 
-            result.products_scraped += 1
-            result.prices.append({
-                "product_id": product.id,
-                "name": product.name,
-                "price": price,
-                "change_percent": change,
-            })
-
             # Check and send alerts
             alerts_sent = await alert_service.check_and_alert(
                 product_id=product.id,
@@ -70,18 +62,48 @@ async def scrape_all_products():
                 starting_price=product.starting_price,
                 expires_at=product.expires_at,
             )
-            result.alerts_sent += alerts_sent
 
             if alerts_sent > 0:
                 product.last_alert_price = price
                 storage_service.update_product(product)
 
-        except ScraperException as e:
-            logger.error(f"Scrape failed for {product.name}: {e}")
-            result.errors.append({
+            return {
+                "success": True,
                 "product_id": product.id,
                 "name": product.name,
-                "error": str(e),
+                "price": price,
+                "change_percent": change,
+                "alerts_sent": alerts_sent
+            }
+
+        except Exception as e:
+            logger.error(f"Scrape failed for {product.name}: {e}")
+            return {
+                "success": False,
+                "product_id": product.id,
+                "name": product.name,
+                "error": str(e)
+            }
+
+    # Run all scrapes in parallel
+    tasks = [_scrape_one(p) for p in products]
+    responses = await asyncio.gather(*tasks)
+
+    for resp in responses:
+        if resp["success"]:
+            result.products_scraped += 1
+            result.alerts_sent += resp["alerts_sent"]
+            result.prices.append({
+                "product_id": resp["product_id"],
+                "name": resp["name"],
+                "price": resp["price"],
+                "change_percent": resp["change_percent"],
+            })
+        else:
+            result.errors.append({
+                "product_id": resp["product_id"],
+                "name": resp["name"],
+                "error": resp["error"],
             })
 
     return ApiResponse(
