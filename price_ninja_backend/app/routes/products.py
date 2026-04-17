@@ -175,13 +175,15 @@ async def list_products(
         
     products = storage_service.get_all_products(user_id=user_id)
     
-    # ─── AUTO-CLEANUP ───
     # If a product is stuck in "Fetching details..." for more than 5 minutes, mark it as failed.
     # This prevents the UI from looking broken if a background task crashed.
-    now = datetime.now(IST)
+    from datetime import timezone
+    now = datetime.now(timezone.utc)
     for p in products:
         if p.name == "Fetching details..." and p.created_at:
-             if now - p.created_at > timedelta(minutes=5):
+             # Ensure p.created_at is UTC aware for comparison
+             created_at_utc = p.created_at if p.created_at.tzinfo else p.created_at.replace(tzinfo=timezone.utc)
+             if now - created_at_utc > timedelta(minutes=5):
                  p.name = "Details Unavailable (Request Blocked)"
                  if not p.image_url:
                      p.image_url = "https://img.freepik.com/free-vector/no-data-concept-illustration_114360-616.jpg"
