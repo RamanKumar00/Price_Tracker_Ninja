@@ -393,101 +393,50 @@ class ScraperService:
                 # ─── Extract price ───
                 price = None
 
-                # Method 1: meta tags (Reliable on mobile/desktop both)
-                meta_price = (soup.find("meta", {"property": "product:price:amount"}) or 
-                              soup.find("meta", {"name": "twitter:data1"})) # twitter:data1 is often price on FK
-                if meta_price:
-                    try:
-                        content = meta_price.get("content", "") or meta_price.get("value", "")
-                        price = extract_price_from_text(content)
-                    except: pass
+                # Method 1: Current Flipkart price classes (Nx9bqj, _30jeq3)
+                price_el = soup.select_one(".Nx9bqj, ._30jeq3, ._25b18c ._30jeq3")
+                if price_el:
+                    price = extract_price_from_text(price_el.get_text())
 
-                # Method 2: div with specifically named classes (Nx9bqj is current)
+                # Method 2: Meta tags (og:price:amount)
                 if price is None:
-                    price_el = soup.find("div", class_="Nx9bqj") or soup.find("div", class_="_30jeq3")
-                    if price_el:
-                        price = extract_price_from_text(price_el.get_text())
-
-                # Method 3: structured data JSON-LD
-                if price is None:
-                    script = soup.find("script", {"type": "application/ld+json"})
-                    if script:
-                        try:
-                            import json
-                            data = json.loads(script.string)
-                            if isinstance(data, list): data = data[0]
-                            price = float(data["offers"]["price"])
-                        except: pass
+                    meta_price = soup.find("meta", {"property": "product:price:amount"})
+                    if meta_price:
+                        price = float(meta_price.get("content", "0"))
 
                 if price is None:
-                    # Generic selector
-                    p_tag = soup.find("div", string=re.compile(r"₹\d+"))
-                    if p_tag:
-                        price = extract_price_from_text(p_tag.get_text())
-
-                # FINAL FALLBACK: Selenium
-                if price is None or title == "Unknown Product":
-                    sel_res = self._scrape_with_selenium(
-                        url, 
-                        price_selector="._30jeq3, ._25b18c ._30jeq3", 
-                        title_selector=".B_NuCI", 
-                        img_selector="._396cs4, ._2r_T1_"
-                    )
-                    if sel_res:
-                        return sel_res
-
-                if not price or not title:
-                    raise ScraperException("Could not extract Flipkart product data")
-                    time.sleep(2)
+                    # Final attempt with Selenium
+                    sel_res = self._scrape_with_selenium(url, ".Nx9bqj", ".VU-ZEz", "._396cs4")
+                    if sel_res and sel_res.get("price"): return sel_res
+                    
+                    if attempt == retries:
+                         raise ScraperException("Could not find price on Flipkart")
                     continue
 
                 # ─── Extract title ───
-                title = "Unknown Product"
-                og_title = soup.find("meta", property="og:title")
-                if og_title:
-                    title = og_title.get("content", "").strip()
-                
-                if title == "Unknown Product" or not title:
-                    for cls in ["VU-ZEz", "B_NuCI", "yhB1nd"]:
-                        el = soup.find("span", class_=cls)
-                        if el:
-                            title = el.get_text().strip()
-                            break
+                title_el = soup.select_one(".VU-ZEz, .B_NuCI, .yhB1nd")
+                title = title_el.get_text().strip() if title_el else "Flipkart Product"
 
                 # ─── Extract image ───
                 image_url = ""
-                og_img = soup.find("meta", property="og:image") or soup.find("meta", attrs={"name": "twitter:image"})
-                if og_img:
-                    image_url = og_img.get("content", "")
-
+                # Priority 1: Main product image
+                img_el = soup.select_one("img.DByuf4, img._396cs4, img._2r_T1_")
+                if img_el:
+                    image_url = img_el.get("src") or img_el.get("data-src")
+                
+                # Priority 2: Og Image
                 if not image_url:
-                    img_el = soup.find("img", class_="_396cs4") or soup.find("img", class_="DByuf4")
-                    if img_el:
-                        image_url = img_el.get("src", "") or img_el.get("data-src", "")
-
-                # Clean and ensure absolute
-                if image_url:
-                    if image_url.startswith("//"):
-                        image_url = "https:" + image_url
-                    elif image_url.startswith("/"):
-                        image_url = "https://www.flipkart.com" + image_url
-
-                description = "No description available."
-                desc_meta = soup.find("meta", attrs={"name": "description"})
-                if desc_meta:
-                    description = desc_meta.get("content", "").strip()
+                    og_img = soup.find("meta", property="og:image")
+                    image_url = og_img.get("content", "") if og_img else ""
 
                 result = {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
-                    "description": description,
-                    "currency": "₹",
                     "platform": Platform.FLIPKART.value,
                     "timestamp": datetime.now(IST).isoformat(),
                     "url": url,
                 }
-                logger.info(f"Flipkart scrape success: {title[:40]} = ₹{price}")
                 return result
 
             except ScraperException:
@@ -511,63 +460,66 @@ class ScraperService:
 
                 # ─── Extract price ───
                 price = None
-                price_el = soup.select_one("div.pdp-price, span.pdp-price")
+                
+                # Method 1: pdp-price classes
+                price_el = soup.select_one(".pdp-price strong, span.pdp-price, .pdp-discount")
                 if price_el:
                     price = extract_price_from_text(price_el.get_text())
-
-                # Fallback: pdp-discount-container
+                
+                # Method 2: Myntra data script
                 if price is None:
-                    pdp = soup.select_one("span.pdp-discountedPrice, span.pdp-mrp")
-                    if pdp:
-                        price = extract_price_from_text(pdp.get_text())
-
-                # Fallback: script data (Myntra SSR)
-                if price is None:
-                    scripts = soup.find_all("script")
-                    for s in scripts:
-                        text = s.string or ""
-                        if '"price":' in text:
-                            m = re.search(r'"price"\s*:\s*([\d.]+)', text)
-                            if m:
-                                price = float(m.group(1))
-                                break
+                     scripts = soup.find_all("script")
+                     for script in scripts:
+                         text = script.string or ""
+                         if '"price":' in text:
+                             import re
+                             m = re.search(r'"price"\s*:\s*([\d.]+)', text)
+                             if m:
+                                 price = float(m.group(1))
+                                 break
 
                 if price is None:
+                    # Final attempt with Selenium
+                    sel_res = self._scrape_with_selenium(url, ".pdp-price", ".pdp-title", ".pdp-main-img")
+                    if sel_res and sel_res.get("price"):
+                        sel_res["platform"] = Platform.MYNTRA.value
+                        return sel_res
+                    
                     if attempt == retries:
-                        raise ScraperException("Price element not found on Myntra")
-                    time.sleep(2 ** attempt)
+                         raise ScraperException("Could not find price on Myntra")
                     continue
 
-                # ─── Title ───
-                title_el = soup.select_one("h1.pdp-title")
-                name_el = soup.select_one("h1.pdp-name")
-                title = f"{title_el.get_text().strip() if title_el else ''} {name_el.get_text().strip() if name_el else ''}".strip() or "Unknown Myntra Product"
+                # ─── Extract title ───
+                title_el = soup.select_one(".pdp-title")
+                name_el = soup.select_one(".pdp-name")
+                title = f"{title_el.get_text()} - {name_el.get_text()}" if title_el and name_el else "Myntra Product"
 
-                # ─── Image ───
+                # ─── Extract image ───
                 image_url = ""
-                og = soup.find("meta", {"property": "og:image"})
-                if og:
-                    image_url = og.get("content", "")
+                img_el = soup.select_one(".pdp-main-img, img.pdp-mod-image")
+                if img_el:
+                    image_url = img_el.get("src")
+                
+                if not image_url:
+                    og_img = soup.find("meta", property="og:image")
+                    image_url = og_img.get("content", "") if og_img else ""
 
-                # ─── Description ───
-                desc_meta = soup.find("meta", attrs={"name": re.compile(r"description", re.I)}) or soup.find("meta", attrs={"property": re.compile(r"og:description", re.I)})
-                description = desc_meta.get("content", "").strip() if desc_meta else "No description available for this product."
-
-                return {
+                result = {
                     "price": price,
                     "title": title,
                     "image_url": image_url,
-                    "description": description,
-                    "currency": "₹",
                     "platform": Platform.MYNTRA.value,
                     "timestamp": datetime.now(IST).isoformat(),
                     "url": url,
                 }
+                return result
+
             except ScraperException:
                 if attempt == retries:
                     raise
                 time.sleep(2 ** attempt)
             except Exception as e:
+                logger.error(f"Myntra scrape error: {e}")
                 if attempt == retries:
                     raise ScraperException(f"Myntra scrape failed: {e}")
                 time.sleep(2 ** attempt)
