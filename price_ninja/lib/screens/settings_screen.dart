@@ -53,7 +53,7 @@ class SettingsScreen extends ConsumerWidget {
                       
                       // User Profile Header
                       userAsync.when(
-                        data: (user) => _buildProfileHeader(user),
+                        data: (user) => _buildProfileHeader(user, ref),
                         loading: () => const SizedBox(height: 80),
                         error: (_, __) => const SizedBox.shrink(),
                       ),
@@ -200,7 +200,7 @@ class SettingsScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildProfileHeader(dynamic user) {
+  Widget _buildProfileHeader(dynamic user, WidgetRef ref) {
     final name = user?.email?.split('@')[0] ?? 'Guest Ninja';
     return Container(
       width: double.infinity,
