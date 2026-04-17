@@ -134,19 +134,30 @@ class ScraperService:
         """Get request headers with a random User-Agent."""
         return {"User-Agent": random.choice(USER_AGENTS)}
 
-    def _fetch_page(self, url: str, timeout: int = 15) -> BeautifulSoup:
-        """Fetch a page using requests and return BeautifulSoup object."""
+    def _fetch_page(self, url: str, timeout: int = 15) -> Optional[BeautifulSoup]:
+        """Fetch page with requests and return BeautifulSoup object or None."""
+        # Clean URL to remove tracking noise which often causes 500/503 errors
+        if "amazon.in" in url and "/dp/" in url:
+            parts = url.split("/dp/")
+            id_part = parts[1].split("/")[0].split("?")[0]
+            url = f"{parts[0]}/dp/{id_part}"
+
         headers = self._get_headers()
         try:
             response = self._session.get(url, headers=headers, timeout=timeout)
-            response.raise_for_status()
+            if response.status_code != 200:
+                logger.warning(f"Request failed with status {response.status_code}")
+                return None
+            
             # If we get a 200 but it's an "Are you a human?" page
             if "captcha" in response.text.lower() or "robot" in response.text.lower():
-                logger.warning(f"Detected CAPTCHA/Bot protection on {url}")
-                return BeautifulSoup(response.text, "lxml") # Still return to check
+                logger.warning(f"Detected CAPTCHA on {url}")
+                return None
+
             return BeautifulSoup(response.text, "lxml")
         except Exception as e:
-            raise ScraperException(f"Request failed: {e}")
+            logger.error(f"Request exception: {e}")
+            return None
 
     def scrape(self, url: str) -> Dict:
         """Entry point for scraping with global retry mechanism."""
@@ -195,6 +206,21 @@ class ScraperService:
             try:
                 logger.info(f"Scraping Amazon (attempt {attempt}): {url[:80]}...")
                 soup = self._fetch_page(url)
+                if not soup:
+                    # Fallback to Selenium immediately if requests fail/blocked
+                    sel_res = self._scrape_with_selenium(
+                        url, 
+                        price_selector=".a-price-whole, #priceblock_ourprice, #priceblock_dealprice", 
+                        title_selector="#productTitle", 
+                        img_selector="#landingImage"
+                    )
+                    if sel_res and sel_res.get("price"):
+                        # Clean Selenium result before returning
+                        sel_res["platform"] = Platform.AMAZON.value
+                        return sel_res
+                    if attempt == retries:
+                        raise ScraperException("Amazon blocked both requests and selenium.")
+                    continue
 
                 # ─── Extract price ───
                 price = None
@@ -339,13 +365,23 @@ class ScraperService:
             "Accept-Language": "en-IN,en;q=0.9",
         }
 
-        for attempt in range(1, retries + 1):
             try:
                 logger.info(f"Scraping Flipkart (attempt {attempt}): {url[:80]}...")
                 
-                # Try with mobile headers first
-                response = self._session.get(url, headers=mobile_headers, timeout=10)
-                soup = BeautifulSoup(response.text, "lxml")
+                soup = self._fetch_page(url)
+                if not soup:
+                     # Fallback to Selenium
+                     sel_res = self._scrape_with_selenium(
+                         url, 
+                         price_selector=".Nx9bqj, ._30jeq3", 
+                         title_selector=".VU-ZEz, .B_NuCI", 
+                         img_selector="._396cs4, .DByuf4"
+                     )
+                     if sel_res and sel_res.get("price"):
+                         return sel_res
+                     if attempt == retries:
+                         raise ScraperException("Flipkart blocked both requests and selenium.")
+                     continue
 
                 # ─── Extract price ───
                 price = None
