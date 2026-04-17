@@ -7,7 +7,7 @@ import asyncio
 from typing import Optional, List
 from starlette.concurrency import run_in_threadpool
 
-from app.models import Product, Platform, AlertConfig, PriceEntry, TrackingActivity, ActivityType
+from app.models import Product, Platform, PriceEntry, TrackingActivity, ActivityType, IST
 from app.schemas import (
     AddProductRequest,
     UpdateProductRequest,
@@ -25,7 +25,7 @@ logger = get_logger("routes.products")
 router = APIRouter(prefix="/api/products", tags=["Products"])
 
 
-async def _background_scrape_and_update(product_id: str, url: str, alert_config: AlertConfig, target_price: float):
+async def _background_scrape_and_update(product_id: str, url: str, alert_config: dict, target_price: float):
     """Run scrape in background after product is saved. Updates price, title, image."""
     product = storage_service.get_product(product_id)
     if not product:
@@ -66,10 +66,10 @@ async def _background_scrape_and_update(product_id: str, url: str, alert_config:
             product_name=product.name,
             target_price=target_price,
             current_price=product.current_price,
-            email=alert_config.email_address,
-            whatsapp=alert_config.whatsapp_number,
-            email_enabled=alert_config.email_enabled,
-            whatsapp_enabled=alert_config.whatsapp_enabled,
+            email=alert_config.get("email_address", ""),
+            whatsapp=alert_config.get("whatsapp_number", ""),
+            email_enabled=alert_config.get("email_enabled", True),
+            whatsapp_enabled=alert_config.get("whatsapp_enabled", False),
             product_id=product_id,
         )
     except Exception as e:
@@ -92,34 +92,23 @@ async def add_product(
 
     platform = detect_platform(req.url)
 
-    alert_cfg = AlertConfig(
-        email_enabled=req.email_enabled,
-        whatsapp_enabled=req.whatsapp_enabled,
-        browser_enabled=req.browser_enabled,
-        email_address=req.email_address,
-        whatsapp_number=req.whatsapp_number,
-    )
+    alert_cfg = {
+        "email_enabled": req.email_enabled,
+        "whatsapp_enabled": req.whatsapp_enabled,
+        "browser_enabled": req.browser_enabled,
+        "email_address": req.email_address,
+        "whatsapp_number": req.whatsapp_number,
+    }
 
-    # WE REMOVED THE SYNC SCRAPE to make the button instant.
     # The UI will show "Fetching details..." while the background task runs.
-    name = "Fetching details..."
-    image_url = ""
-    description = ""
-    initial_price = None
-
     product = Product(
         user_id=user_id,
         url=req.url,
         platform=platform.value,
-        name=name,
-        image_url=image_url,
-        current_price=initial_price,
-        starting_price=initial_price,
-        description=description,
+        name="Fetching details...",
         target_price=req.target_price,
         alert_config=alert_cfg,
-        created_at=datetime.now(),
-        last_checked=datetime.now() if initial_price else None,
+        created_at=datetime.now(IST),
     )
     
     storage_service.add_product(product)
@@ -150,15 +139,21 @@ async def add_product(
 
 
 @router.get("", response_model=ApiResponse)
-async def list_products(user_id: Optional[str] = Depends(get_current_user_id)):
-    """Get all tracked products."""
+async def list_products(
+    limit: int = 50, 
+    offset: int = 0,
+    user_id: Optional[str] = Depends(get_current_user_id)
+):
+    """Get tracked products with pagination."""
     if not user_id:
         raise HTTPException(401, "Unauthorized: user_id is required to fetch products.")
     products = storage_service.get_all_products(user_id=user_id)
+    # Manual slicing for now, storage_service can be optimized further later
+    sliced = products[offset : offset + limit]
     return ApiResponse(
         success=True,
-        message=f"{len(products)} products found",
-        data=[p.model_dump() for p in products],
+        message=f"{len(sliced)} products found",
+        data=[p.model_dump() for p in sliced],
     )
 
 

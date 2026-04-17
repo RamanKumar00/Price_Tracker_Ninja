@@ -16,6 +16,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
+from app.database import create_db_and_tables
 
 from app.routes import products, scrape, alerts, websocket, health, history
 from app.utils.logger import get_logger
@@ -105,10 +106,16 @@ def start_scheduler():
     return scheduler
 
 
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application startup and shutdown events."""
     logger.info("🛒 Price Ninja Backend starting...")
+    
+    # Initialize DB
+    create_db_and_tables()
+    logger.info("📡 Database initialized (Tables created if missing)")
+
     logger.info(f"   Debug mode: {settings.DEBUG}")
     logger.info(f"   Data dir:   {settings.DATA_DIR}")
 

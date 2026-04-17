@@ -1,95 +1,77 @@
 """Pydantic models for Product, PriceEntry, AlertConfig."""
 
 from __future__ import annotations
-from pydantic import BaseModel, Field, HttpUrl
-from typing import Optional, List
-from datetime import datetime, timezone, timedelta
-from enum import Enum
 import uuid
+from datetime import datetime
+from enum import Enum
+from typing import Optional, List, Dict
+from sqlmodel import SQLModel, Field, Column, JSON
+import pytz
 
-# Indian Standard Time (IST) Offset
-IST = timezone(timedelta(hours=5, minutes=30))
-
+# Constants
+IST = pytz.timezone('Asia/Kolkata')
 
 class Platform(str, Enum):
-    AMAZON = "Amazon"
-    FLIPKART = "Flipkart"
-    MYNTRA = "Myntra"
-    EBAY = "eBay"
-    UNKNOWN = "Unknown"
-
+    AMAZON = "amazon"
+    FLIPKART = "flipkart"
+    MYNTRA = "myntra"
+    EBAY = "ebay"
+    GENERIC = "generic"
 
 class AlertType(str, Enum):
-    EMAIL = "email"
-    WHATSAPP = "whatsapp"
-    BROWSER = "browser"
-
-
-class AlertConfig(BaseModel):
-    email_enabled: bool = True
-    whatsapp_enabled: bool = False
-    browser_enabled: bool = True
-    email_address: str = ""
-    whatsapp_number: str = ""
-
-
-class PriceEntry(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    product_id: str
-    price: float
-    currency: str = "₹"
-    timestamp: datetime = Field(default_factory=lambda: datetime.now(IST))
-    change_percent: Optional[float] = None
-    status: str = "ok"  # ok, error, timeout
-
-
-class Product(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: Optional[str] = None
-    name: str
-    url: str
-    image_url: Optional[str] = None
-    description: Optional[str] = None
-    platform: Platform = Platform.UNKNOWN
-    current_price: Optional[float] = None
-    lowest_price: Optional[float] = None
-    highest_price: Optional[float] = None
-    average_price: Optional[float] = None
-    target_price: float = 0.0
-    total_checks: int = 0
-    alert_config: AlertConfig = Field(default_factory=AlertConfig)
-    is_favorite: bool = False
-    last_checked: Optional[datetime] = None
-    created_at: datetime = Field(default_factory=lambda: datetime.now(IST))
-    updated_at: datetime = Field(default_factory=lambda: datetime.now(IST))
-    last_alert_price: Optional[float] = None
-    starting_price: Optional[float] = None
-    expires_at: Optional[datetime] = None
-
-
-class AlertRecord(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    product_id: str
-    product_name: str
-    price: float
-    target_price: float
-    alert_type: AlertType
-    sent_at: datetime = Field(default_factory=lambda: datetime.now(IST))
-    success: bool = True
-    error_message: Optional[str] = None
-
+    PRICE_DROP = "price_drop"
+    TARGET_REACHED = "target_reached"
+    BACK_IN_STOCK = "back_in_stock"
+    REGISTRATION = "registration"
 
 class ActivityType(str, Enum):
     ADDED = "added"
     DELETED = "deleted"
     UPDATED = "updated"
 
+class Product(SQLModel, table=True):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    user_id: str = Field(index=True)
+    url: str
+    platform: str
+    name: str = "Fetching details..."
+    current_price: Optional[float] = None
+    starting_price: Optional[float] = None
+    target_price: float = 0.0
+    image_url: Optional[str] = None
+    description: Optional[str] = None
+    is_favorite: bool = False
+    last_alert_price: Optional[float] = None
+    created_at: datetime = Field(default_factory=lambda: datetime.now(IST))
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(IST))
+    last_checked: Optional[datetime] = None
+    expires_at: Optional[datetime] = None
+    
+    # Store config as a JSON column for simplicity
+    alert_config: Dict = Field(default_factory=dict, sa_column=Column(JSON))
 
-class TrackingActivity(BaseModel):
-    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
-    user_id: str
-    product_id: str
+class PriceEntry(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: str = Field(foreign_key="product.id", index=True)
+    price: float
+    change_percent: Optional[float] = None
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(IST))
+
+class AlertRecord(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    product_id: str = Field(index=True)
+    product_name: str
+    target_price: float
+    alert_type: AlertType
+    sent_at: datetime = Field(default_factory=lambda: datetime.now(IST))
+    success: bool = True
+    error_message: Optional[str] = None
+
+class TrackingActivity(SQLModel, table=True):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()), primary_key=True)
+    user_id: str = Field(index=True)
+    product_id: str = Field(index=True)
     product_name: str
     action: ActivityType
     timestamp: datetime = Field(default_factory=lambda: datetime.now(IST))
-    metadata: Optional[dict] = None
+    metadata: Optional[Dict] = Field(default=None, sa_column=Column(JSON))

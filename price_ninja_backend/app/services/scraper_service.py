@@ -49,20 +49,26 @@ class ScraperService:
         })
 
     def _get_selenium_driver(self):
-        """Initialize a headless Chrome driver."""
+        """Initialize an optimized headless Chrome driver for low-RAM environments."""
         try:
             from selenium import webdriver
             from selenium.webdriver.chrome.options import Options
-            from selenium.webdriver.chrome.service import Service
             
             options = Options()
-            options.add_argument("--headless")
+            options.add_argument("--headless=new") # Faster headless mode
             options.add_argument("--no-sandbox")
             options.add_argument("--disable-dev-shm-usage")
             options.add_argument("--disable-gpu")
+            options.add_argument("--disable-extensions")
+            options.add_argument("--disable-notifications")
+            options.add_argument("--blink-settings=imagesEnabled=false") # No images = fast
+            options.add_argument("--window-size=1920,1080")
             options.add_argument(f"user-agent={random.choice(USER_AGENTS)}")
             
-            # Common paths for chromedriver in linux/docker
+            # Optimization for Railway (low disk/RAM)
+            options.add_argument("--disk-cache-dir=/tmp/chrome-cache")
+            options.add_argument("--disk-cache-size=10485760") # 10MB limit
+            
             return webdriver.Chrome(options=options)
         except Exception as e:
             logger.error(f"Failed to initialize Selenium: {e}")
@@ -143,18 +149,42 @@ class ScraperService:
             raise ScraperException(f"Request failed: {e}")
 
     def scrape(self, url: str) -> Dict:
-        """Scrape a product URL. Auto-detects platform."""
-        platform = detect_platform(url)
-        if platform == Platform.AMAZON:
-            return self.scrape_amazon(url)
-        elif platform == Platform.FLIPKART:
-            return self.scrape_flipkart(url)
-        elif platform == Platform.MYNTRA:
-            return self.scrape_myntra(url)
-        elif platform == Platform.EBAY:
-            return self.scrape_ebay(url)
-        else:
-            return self.scrape_generic(url)
+        """Entry point for scraping with global retry mechanism."""
+        max_retries = 3
+        last_error = "Unknown error"
+
+        for attempt in range(1, max_retries + 1):
+            try:
+                platform = detect_platform(url)
+                logger.info(f"Attempt {attempt}/{max_retries} for {platform.value}: {url[:60]}")
+                
+                if platform == Platform.AMAZON:
+                    res = self.scrape_amazon(url)
+                elif platform == Platform.FLIPKART:
+                    res = self.scrape_flipkart(url)
+                elif platform == Platform.MYNTRA:
+                    res = self.scrape_myntra(url)
+                elif platform == Platform.EBAY:
+                    res = self.scrape_ebay(url)
+                else:
+                    res = self.scrape_generic(url)
+                
+                if res and res.get("price"):
+                    return res
+                
+                last_error = "Price not found in response"
+                
+            except Exception as e:
+                last_error = str(e)
+                logger.warning(f"Attempt {attempt} failed: {e}")
+            
+            if attempt < max_retries:
+                # Exponential backoff + jitter
+                sleep_time = (2 ** attempt) + random.uniform(0, 2)
+                logger.info(f"Retrying in {sleep_time:.1f}s...")
+                time.sleep(sleep_time)
+
+        raise ScraperException(f"Failed after {max_retries} attempts. Last error: {last_error}")
 
 
     def scrape_amazon(self, url: str, retries: int = 1) -> Dict:
