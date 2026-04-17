@@ -11,6 +11,7 @@ from app.services.storage_service import storage_service
 from app.utils.logger import get_logger
 from app.utils.exceptions import AlertSendException
 from config import settings
+from starlette.concurrency import run_in_threadpool
 
 logger = get_logger("alerts")
 
@@ -187,22 +188,25 @@ Price Ninja v4.0
                 try:
                     import requests
                     logger.info(f"Sending email via Resend API to {to_email}")
-                    response = await run_in_threadpool(
-                        requests.post,
-                        "https://api.resend.com/emails",
-                        headers={
-                            "Authorization": f"Bearer {settings.RESEND_API_KEY}",
-                            "Content-Type": "application/json",
-                        },
-                        json={
-                            "from": "Price Ninja <onboarding@resend.dev>",
-                            "to": to_email,
-                            "subject": subject,
-                            "html": html_body,
-                            "text": body_plain,
-                        },
-                        timeout=10
-                    )
+                    
+                    def _do_resend():
+                        return requests.post(
+                            "https://api.resend.com/emails",
+                            headers={
+                                "Authorization": f"Bearer {settings.RESEND_API_KEY}",
+                                "Content-Type": "application/json",
+                            },
+                            json={
+                                "from": "Price Ninja <onboarding@resend.dev>",
+                                "to": to_email,
+                                "subject": subject,
+                                "html": html_body,
+                                "text": body_plain,
+                            },
+                            timeout=10
+                        )
+
+                    response = await run_in_threadpool(_do_resend)
                     if response.status_code in (200, 201):
                         logger.info(f"Resend email success to {to_email}")
                         return True
