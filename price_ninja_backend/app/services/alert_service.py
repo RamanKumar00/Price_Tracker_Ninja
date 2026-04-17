@@ -1,6 +1,7 @@
 """Alert service for sending Email and WhatsApp notifications."""
 
 import smtplib
+import os
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 from datetime import datetime
