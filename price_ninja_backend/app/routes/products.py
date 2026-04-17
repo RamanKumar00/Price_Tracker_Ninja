@@ -133,8 +133,8 @@ async def add_product(
 
     return ApiResponse(
         success=True,
-        message="Product added successfully. " + ("Initial fetch complete." if initial_price else "Details being fetched in background."),
-        data=product.to_dict()
+        message="Product added successfully. Details are being fetched in the background.",
+        data=product.model_dump()
     )
 
 
