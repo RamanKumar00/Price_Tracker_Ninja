@@ -41,8 +41,15 @@ async def send_test_alert(req: TestAlertRequest):
         success = await alert_service.send_whatsapp_alert(
             phone, product_name, price, target, url, req.product_id or ""
         )
+    elif req.alert_type == "push":
+        token = req.email_address # In Flutter we passed token in email_address field for test.
+        if not token:
+            raise HTTPException(400, "FCM Token is required for push test")
+        success = await alert_service.send_push_notification(
+            token, "🥷 Ninja Test", "System check: Push Notification functionality is ACTIVE!", req.product_id or ""
+        )
     else:
-        raise HTTPException(400, "Invalid alert type. Use 'email' or 'whatsapp'")
+        raise HTTPException(400, "Invalid alert type. Use 'email', 'whatsapp' or 'push'")
 
     return ApiResponse(
         success=success,
