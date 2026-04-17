@@ -74,4 +74,4 @@ class TrackingActivity(SQLModel, table=True):
     product_name: str
     action: ActivityType
     timestamp: datetime = Field(default_factory=lambda: datetime.now(IST))
-    metadata: Optional[Dict] = Field(default=None, sa_column=Column(JSON))
+    extra_metadata: Optional[Dict] = Field(default=None, sa_column=Column(JSON))

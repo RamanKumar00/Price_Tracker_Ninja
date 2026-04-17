@@ -119,7 +119,7 @@ async def add_product(
         product_id=product.id,
         product_name=product.name,
         action=ActivityType.ADDED,
-        metadata={"url": product.url}
+        extra_metadata={"url": product.url}
     ))
 
     # background_tasks will still run to ensure full price history and initial metrics are solid
