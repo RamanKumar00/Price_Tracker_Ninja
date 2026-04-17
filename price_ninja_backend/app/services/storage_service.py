@@ -10,7 +10,7 @@ from datetime import datetime
 from typing import List, Optional
 from pathlib import Path
 
-from app.models import Product, PriceEntry, AlertRecord
+from app.models import Product, PriceEntry, AlertRecord, TrackingActivity
 from app.utils.logger import get_logger
 from config import settings
 
@@ -25,12 +25,13 @@ class StorageService:
         self.products_file = self.data_dir / "products.json"
         self.prices_file = self.data_dir / "price_history.json"
         self.alerts_file = self.data_dir / "alert_history.json"
+        self.activity_file = self.data_dir / "activity_history.json"
         self._ensure_data_dir()
 
     def _ensure_data_dir(self):
         """Create data directory and files if they don't exist."""
         self.data_dir.mkdir(parents=True, exist_ok=True)
-        for filepath in [self.products_file, self.prices_file, self.alerts_file]:
+        for filepath in [self.products_file, self.prices_file, self.alerts_file, self.activity_file]:
             if not filepath.exists():
                 filepath.write_text("[]", encoding="utf-8")
 
@@ -131,6 +132,20 @@ class StorageService:
         filtered = [a for a in alerts if a.get("product_id") == product_id]
         filtered.sort(key=lambda x: x.get("sent_at", ""), reverse=True)
         return [AlertRecord(**a) for a in filtered]
+
+    # ─────────── User ActivityLog ───────────
+
+    def add_activity(self, activity: TrackingActivity) -> TrackingActivity:
+        activities = self._read_json(self.activity_file)
+        activities.append(activity.model_dump())
+        self._write_json(self.activity_file, activities)
+        return activity
+
+    def get_activity_history(self, user_id: str, limit: int = 50) -> List[TrackingActivity]:
+        activities = self._read_json(self.activity_file)
+        filtered = [a for a in activities if a.get("user_id") == user_id]
+        filtered.sort(key=lambda x: x.get("timestamp", ""), reverse=True)
+        return [TrackingActivity(**a) for a in filtered[:limit]]
 
 
 # Singleton

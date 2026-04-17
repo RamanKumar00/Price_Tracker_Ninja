@@ -17,7 +17,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from starlette.concurrency import run_in_threadpool
 
-from app.routes import products, scrape, alerts, websocket, health
+from app.routes import products, scrape, alerts, websocket, health, history
 from app.utils.logger import get_logger
 from app.services.storage_service import storage_service
 from app.services.scraper_service import scraper_service
@@ -151,6 +151,7 @@ app.include_router(products.router)
 app.include_router(scrape.router)
 app.include_router(alerts.router)
 app.include_router(websocket.router)
+app.include_router(history.router)
 
 
 @app.get("/")

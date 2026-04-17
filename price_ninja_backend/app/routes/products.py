@@ -7,7 +7,7 @@ import asyncio
 from typing import Optional, List
 from starlette.concurrency import run_in_threadpool
 
-from app.models import Product, Platform, AlertConfig, PriceEntry
+from app.models import Product, Platform, AlertConfig, PriceEntry, TrackingActivity, ActivityType
 from app.schemas import (
     AddProductRequest,
     UpdateProductRequest,
@@ -123,6 +123,15 @@ async def add_product(
     )
     
     storage_service.add_product(product)
+    
+    # Record History
+    storage_service.add_activity(TrackingActivity(
+        user_id=user_id,
+        product_id=product.id,
+        product_name=product.name,
+        action=ActivityType.ADDED,
+        metadata={"url": product.url}
+    ))
 
     # background_tasks will still run to ensure full price history and initial metrics are solid
     background_tasks.add_task(
@@ -199,6 +208,14 @@ async def delete_product(product_id: str, user_id: Optional[str] = Depends(get_c
     if not product or (product.user_id and product.user_id != user_id):
         raise HTTPException(404, "Product not found")
     
+    # Record History
+    storage_service.add_activity(TrackingActivity(
+        user_id=user_id,
+        product_id=product.id,
+        product_name=product.name,
+        action=ActivityType.DELETED
+    ))
+
     deleted = storage_service.delete_product(product_id)
     if not deleted:
         raise HTTPException(404, "Product not found")

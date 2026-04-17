@@ -77,3 +77,19 @@ class AlertRecord(BaseModel):
     sent_at: datetime = Field(default_factory=lambda: datetime.now(IST))
     success: bool = True
     error_message: Optional[str] = None
+
+
+class ActivityType(str, Enum):
+    ADDED = "added"
+    DELETED = "deleted"
+    UPDATED = "updated"
+
+
+class TrackingActivity(BaseModel):
+    id: str = Field(default_factory=lambda: str(uuid.uuid4()))
+    user_id: str
+    product_id: str
+    product_name: str
+    action: ActivityType
+    timestamp: datetime = Field(default_factory=lambda: datetime.now(IST))
+    metadata: Optional[dict] = None
